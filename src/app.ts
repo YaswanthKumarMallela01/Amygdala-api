@@ -23,6 +23,15 @@ app.use('/v1/auth', apiKeyMiddleware, authRouter);
 // Health check (no API key required)
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// Favicon handler
+app.get(['/favicon.ico', '/fevicon.png'], (_req, res) => {
+  const p = path.join(process.cwd(), 'fevicon.png');
+  if (fs.existsSync(p)) return res.sendFile(p);
+  const alt = path.join(__dirname, '../fevicon.png');
+  if (fs.existsSync(alt)) return res.sendFile(alt);
+  res.status(204).end();
+});
+
 // Helper to serve test dashboard
 function serveTestDashboard(_req: express.Request, res: express.Response) {
   const filePath = path.join(__dirname, '../test-client.html');
