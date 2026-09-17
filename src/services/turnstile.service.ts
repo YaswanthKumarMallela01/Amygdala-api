@@ -1,10 +1,18 @@
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 
+// Cloudflare's official test secret key that always passes verification
+const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
+
 export async function verifyTurnstileToken(token: string, ip?: string): Promise<boolean> {
+  // In development, use Cloudflare's always-pass test key
+  const secretKey = process.env.NODE_ENV === 'production'
+    ? env.TURNSTILE_SECRET_KEY
+    : TURNSTILE_TEST_SECRET;
+
   try {
     const body = new URLSearchParams();
-    body.append('secret', env.TURNSTILE_SECRET_KEY);
+    body.append('secret', secretKey);
     body.append('response', token);
     if (ip) {
       body.append('remoteip', ip);
@@ -24,3 +32,4 @@ export async function verifyTurnstileToken(token: string, ip?: string): Promise<
     return false;
   }
 }
+
