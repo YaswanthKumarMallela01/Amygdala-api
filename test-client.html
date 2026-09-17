@@ -3,31 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amygdala - Auth Test Dashboard</title>
+  <title>Amygdala - Auth-as-a-Service</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0f19;
-      --surface: #111827;
-      --surface-border: #1f293d;
-      --surface-hover: #1e293b;
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-glow: rgba(99, 102, 241, 0.25);
+      --bg: #07090e;
+      --card-bg: rgba(18, 24, 38, 0.45);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --card-glow: rgba(255, 255, 255, 0.05);
+      --input-bg: rgba(10, 14, 23, 0.6);
+      --input-border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #ffffff;
+      --accent: #6366f1;
       --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.2);
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --text-dim: #6b7280;
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -35,643 +34,817 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      line-height: 1.5;
-    }
-
-    /* Top Navigation */
-    header {
-      background: rgba(17, 24, 39, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--surface-border);
-      padding: 14px 28px;
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+      padding: 30px 16px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+    /* Ambient Cosmic Glass Background Orbs */
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .brand-badge {
+    .orb-1 {
+      width: 750px;
+      height: 750px;
+      top: -150px;
+      right: -200px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.06), transparent 70%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      filter: blur(1px);
+    }
+
+    .orb-2 {
+      width: 650px;
+      height: 650px;
+      bottom: -220px;
+      left: -200px;
+      background: radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.08), transparent 70%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .orb-3 {
+      width: 420px;
+      height: 420px;
+      top: 10%;
+      left: -100px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    /* Decorative Typography around card */
+    .deco-text {
+      position: absolute;
+      color: var(--text-dim);
       font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: var(--primary-glow);
-      color: #818cf8;
-      border: 1px solid rgba(129, 140, 248, 0.3);
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
+      line-height: 1.6;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .deco-top-left { top: 32px; left: 40px; display: flex; align-items: center; gap: 12px; }
+    .deco-top-right { top: 32px; right: 40px; }
+    .deco-mid-left { left: 40px; top: 35%; max-width: 140px; }
+    .deco-mid-right { right: 40px; top: 40%; text-align: right; }
+    .deco-bottom-left { bottom: 32px; left: 40px; }
+    .deco-bottom-right { bottom: 32px; right: 40px; display: flex; align-items: center; gap: 8px; }
+
+    @media (max-width: 1024px) {
+      .deco-text { display: none; }
     }
 
-    .config-bar {
+    /* Target API Switcher Bar */
+    .api-pill {
+      position: fixed;
+      top: 20px;
+      z-index: 100;
+      background: rgba(18, 24, 38, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      padding: 4px 6px 4px 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 13px;
+      gap: 10px;
+      font-size: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
 
-    .config-input {
-      background: #0b0f19;
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      padding: 7px 12px;
-      border-radius: 8px;
-      font-family: var(--font-mono);
+    .api-pill select {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
       font-size: 12px;
+      font-family: inherit;
       outline: none;
-      transition: all 0.2s;
-    }
-
-    .config-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-glow);
-    }
-
-    .select-env {
-      background: #0b0f19;
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      padding: 7px 10px;
-      border-radius: 8px;
-      font-size: 12px;
       cursor: pointer;
     }
 
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(16, 185, 129, 0.12);
-      color: #34d399;
-      border: 1px solid rgba(52, 211, 153, 0.25);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
+    .api-status-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: #34d399;
-      box-shadow: 0 0 8px #34d399;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
     }
 
-    /* Main Container Grid */
-    main {
-      flex: 1;
-      max-width: 1440px;
+    .api-test-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .api-test-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    /* Central Glassmorphic Card */
+    .glass-card {
+      position: relative;
+      z-index: 10;
       width: 100%;
-      margin: 0 auto;
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 1024px) {
-      main { grid-template-columns: 1fr; }
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      max-width: 480px;
+      background: rgba(16, 22, 34, 0.55);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 28px;
+      padding: 38px 34px;
+      box-shadow: 
+        0 30px 70px -10px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      align-items: center;
+      transition: all 0.3s;
     }
 
-    /* Tabs */
-    .tabs {
+    /* Brain Icon Container */
+    .brain-glow-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
       display: flex;
-      gap: 6px;
-      background: #0b0f19;
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid var(--surface-border);
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+      margin-bottom: 12px;
     }
 
-    .tab-btn {
+    .brain-svg {
+      width: 32px;
+      height: 32px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.6;
+    }
+
+    .brand-title {
+      font-size: 25px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+
+    /* Segmented Tab Capsule */
+    .capsule-tabs {
+      background: rgba(7, 10, 18, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 4px;
+      display: flex;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 24px;
+    }
+
+    .capsule-tab {
       flex: 1;
-      padding: 10px 14px;
+      padding: 8px 16px;
       background: transparent;
       border: none;
       color: var(--text-muted);
-      border-radius: 8px;
+      border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .tab-btn:hover { color: var(--text); background: var(--surface-hover); }
-    .tab-btn.active {
-      background: var(--primary);
-      color: white;
-      box-shadow: 0 4px 12px var(--primary-glow);
+    .capsule-tab.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: flex; flex-direction: column; gap: 16px; }
-
-    /* Form Elements */
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    /* Form Section Heading */
+    .section-heading {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 18px;
     }
 
-    .form-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 3px;
+    }
+
+    .section-desc {
+      font-size: 13px;
       color: var(--text-muted);
     }
 
-    .input-field {
-      background: #0b0f19;
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      padding: 12px 14px;
-      border-radius: 10px;
+    /* Social OAuth Buttons */
+    .social-stack {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-oauth {
+      width: 100%;
+      background: rgba(18, 24, 38, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      padding: 12px 18px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-oauth:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-oauth-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .arrow-icon {
+      color: var(--text-dim);
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    .btn-oauth:hover .arrow-icon { transform: translateX(3px); color: #fff; }
+
+    /* OR Divider */
+    .divider-wrap {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .divider-text {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    /* Inputs */
+    .input-wrap {
+      width: 100%;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .glass-input {
+      width: 100%;
+      background: rgba(8, 12, 20, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 14px 16px 14px 44px;
+      border-radius: 14px;
       outline: none;
       transition: all 0.2s;
     }
 
-    .input-field:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
+    .glass-input:focus {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(12, 18, 30, 0.85);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
     }
 
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-
-    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn:active { transform: translateY(0); }
-
-    .btn-secondary {
-      background: #1e293b;
-      color: var(--text);
-      border: 1px solid var(--surface-border);
-    }
-    .btn-secondary:hover { background: #273549; }
-
-    .btn-danger {
-      background: #dc2626;
-      color: white;
-    }
-    .btn-danger:hover { background: #b91c1c; }
-
-    .btn-social {
+    /* Sub-row: Remember & Forgot */
+    .input-subrow {
       width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      padding: 0 4px;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check-box {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .link-sub {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+      cursor: pointer;
+    }
+    .link-sub:hover { color: #fff; text-decoration: underline; }
+
+    /* Glowing Pill Submit Button */
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      border: 1px solid var(--surface-border);
-      background: #111827;
-      color: var(--text);
-      transition: all 0.2s;
+      gap: 8px;
+      box-shadow: 
+        0 12px 28px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-social:hover {
-      background: #1e293b;
-      border-color: #374151;
+
+    .btn-submit:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.12) 100%);
+      box-shadow: 
+        0 16px 36px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
       transform: translateY(-1px);
     }
 
-    /* Right Session Panel */
-    .user-badge {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px;
-      background: #0b0f19;
-      border: 1px solid var(--surface-border);
-      border-radius: 12px;
-    }
-
-    .user-avatar {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-    }
-
-    .user-info { flex: 1; }
-    .user-email { font-size: 15px; font-weight: 600; color: #fff; }
-    .user-sub { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
-
-    .token-display {
-      background: #0b0f19;
-      border: 1px solid var(--surface-border);
-      border-radius: 10px;
-      padding: 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #38bdf8;
-      word-break: break-all;
-      max-height: 120px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .token-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .copy-chip {
+    .card-footer {
+      margin-top: 24px;
       font-size: 11px;
-      background: #1e293b;
-      border: 1px solid var(--surface-border);
-      color: #94a3b8;
-      padding: 3px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .copy-chip:hover { color: white; background: #334155; }
-
-    /* Decoded JWT Inspector */
-    .jwt-payload {
-      background: #080c14;
-      border: 1px solid var(--surface-border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #a7f3d0;
-      white-space: pre-wrap;
-      max-height: 140px;
-      overflow-y: auto;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.6;
     }
 
-    /* Live Activity Console */
-    .console-box {
-      background: #060910;
-      border: 1px solid var(--surface-border);
-      border-radius: 12px;
-      padding: 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      height: 220px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .card-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
     }
+    .card-footer a:hover { color: #fff; }
 
-    .log-item {
-      display: flex;
-      gap: 8px;
-      line-height: 1.4;
-      border-bottom: 1px solid #111827;
-      padding-bottom: 6px;
-    }
-    .log-time { color: var(--text-dim); }
-    .log-method { font-weight: 700; color: #818cf8; }
-    .log-status { font-weight: 700; }
-    .log-status.s200 { color: #34d399; }
-    .log-status.s400 { color: #f87171; }
-    .log-status.s401 { color: #fbbf24; }
-
-    /* Alert / Notification banner */
+    /* Alert Banner inside card */
     .banner {
+      width: 100%;
       padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 10px;
+      font-size: 12px;
+      margin-bottom: 14px;
       display: none;
       align-items: center;
       gap: 8px;
     }
     .banner.show { display: flex; }
-    .banner-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-    .banner-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+    .banner-success { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+    .banner-error { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.25); }
+
+    /* Floating Session Bar at Bottom (when logged in) */
+    .session-dock {
+      position: fixed;
+      bottom: 20px;
+      z-index: 100;
+      background: rgba(18, 24, 38, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 12px 20px;
+      max-width: 760px;
+      width: 90%;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .dock-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dock-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dock-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .dock-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+    /* Modal for Inspection / MFA */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #101622;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .token-preview {
+      background: #060910;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #38bdf8;
+      word-break: break-all;
+      max-height: 110px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
-  <header>
-    <div class="brand">
-      <span>🧠 Amygdala</span>
-      <span class="brand-badge">Auth-as-a-Service</span>
+  <!-- Ambient Cosmic Background Orbs -->
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+  <div class="ambient-orb orb-3"></div>
+
+  <!-- Decorative Minimalist Typography matching reference design -->
+  <div class="deco-text deco-top-left">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a4 4 0 0 0-4 4c0 .8.2 1.5.6 2.1C6.2 8.7 5 10.7 5 13c0 2.8 2.2 5 5 5h4c2.8 0 5-2.2 5-5 0-2.3-1.2-4.3-3.6-4.9.4-.6.6-1.3.6-2.1a4 4 0 0 0-4-4Z"/><path d="M12 2v20"/></svg>
+    <div>
+      <div style="font-weight: 700; color: #fff; font-size: 13px;">Amygdala</div>
+      <div>Secure. Simple. Scalable.</div>
+    </div>
+  </div>
+
+  <div class="deco-text deco-top-right">
+    Auth for a better internet. —
+  </div>
+
+  <div class="deco-text deco-mid-left">
+    Secure<br>Authentication<br>for Modern<br>Builders.<br>—
+  </div>
+
+  <div class="deco-text deco-mid-right">
+    Developers<br>Creators<br>Teams<br>Everyone<br>—
+  </div>
+
+  <div class="deco-text deco-bottom-left">
+    Build<br>Authenticate<br>Scale<br>—
+  </div>
+
+  <div class="deco-text deco-bottom-right">
+    <div style="width: 8px; height: 8px; border-radius: 50%; background: #fff;"></div>
+    <span>Powered by <strong>Trust</strong></span>
+  </div>
+
+  <!-- Top API Target Switcher -->
+  <div class="api-pill">
+    <div class="api-status-dot" id="statusDot"></div>
+    <select id="apiEnv" onchange="changeEnv(this.value)">
+      <option value="https://amygdala-api-37nt.onrender.com">Cloud (amygdala-api-37nt.onrender.com)</option>
+      <option value="http://localhost:3000">Local (http://localhost:3000)</option>
+    </select>
+    <button class="api-test-btn" onclick="pingServer()">Test Ping</button>
+  </div>
+
+  <!-- Centerpiece Glassmorphic Card -->
+  <div class="glass-card">
+    
+    <!-- Glowing Brain Icon -->
+    <div class="brain-glow-wrap">
+      <svg class="brain-svg" viewBox="0 0 24 24">
+        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z"/>
+        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/>
+      </svg>
     </div>
 
-    <div class="config-bar">
-      <select id="envSelector" class="select-env" onchange="switchEnv(this.value)">
-        <option value="https://amygdala-api-37nt.onrender.com">Render Cloud (amygdala-api-37nt.onrender.com)</option>
-        <option value="http://localhost:3000">Localhost (http://localhost:3000)</option>
-        <option value="custom">Custom URL...</option>
-      </select>
+    <div class="brand-title">Amygdala</div>
+    <div class="brand-subtitle">One identity. Endless possibilities.</div>
 
-      <input type="text" id="apiBaseUrl" class="config-input" style="width: 280px;" value="https://amygdala-api-37nt.onrender.com" placeholder="API Base URL">
-      <input type="password" id="apiKey" class="config-input" style="width: 220px;" value="b6935e519bcbfd6e9d71780c155e4617f83ca08b60210b86b0d08a645f34f145" placeholder="x-api-key">
-
-      <button class="btn btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="checkHealth()">Ping</button>
-      <div id="statusPill" class="status-pill">
-        <div class="status-dot"></div>
-        <span id="statusText">Ready</span>
-      </div>
+    <!-- Segmented Capsule Pill Tabs -->
+    <div class="capsule-tabs">
+      <button class="capsule-tab active" id="tabSignIn" onclick="switchMode('login')">Sign In</button>
+      <button class="capsule-tab" id="tabSignUp" onclick="switchMode('signup')">Sign Up</button>
     </div>
-  </header>
 
-  <!-- Main Grid -->
-  <main>
-    <!-- Left Column: Auth Operations -->
-    <div class="card">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="setTab('login')">🔑 Login</button>
-        <button class="tab-btn" onclick="setTab('signup')">📝 Sign Up</button>
-        <button class="tab-btn" onclick="setTab('oauth')">🌐 Social</button>
-        <button class="tab-btn" onclick="setTab('mfa')">🛡️ MFA</button>
-        <button class="tab-btn" onclick="setTab('reset')">🔁 Reset</button>
-      </div>
+    <!-- Alert / Toast Banner -->
+    <div id="banner" class="banner"></div>
 
-      <div id="alertBanner" class="banner"></div>
+    <!-- Section Heading -->
+    <div class="section-heading">
+      <div class="section-title" id="modeTitle">Welcome back</div>
+      <div class="section-desc" id="modeDesc">Sign in to your account</div>
+    </div>
 
-      <!-- Tab 1: Login -->
-      <div id="tab-login" class="tab-content active">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" id="loginEmail" class="input-field" placeholder="user@example.com" value="test@example.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" id="loginPassword" class="input-field" placeholder="••••••••" value="mypassword123">
-        </div>
-
-        <div id="mfaPrompt" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 14px;">
-          <div class="form-label" style="color: #fbbf24; margin-bottom: 6px;">MFA Required! Enter 6-digit Authenticator Code:</div>
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="mfaLoginCode" class="input-field" placeholder="123456" maxlength="6" style="text-align: center; font-family: var(--font-mono); font-size: 18px; letter-spacing: 4px;">
-            <button class="btn" onclick="submitMfaLogin()">Verify MFA</button>
-          </div>
-        </div>
-
-        <button class="btn" id="btnLogin" onclick="doLogin()">Sign In with Email</button>
-      </div>
-
-      <!-- Tab 2: Signup -->
-      <div id="tab-signup" class="tab-content">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" id="signupEmail" class="input-field" placeholder="user@example.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password (Min 8 chars)</label>
-          <input type="password" id="signupPassword" class="input-field" placeholder="••••••••">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cloudflare Turnstile Token</label>
-          <input type="text" id="signupTurnstile" class="input-field" value="test" placeholder="Turnstile token">
-          <span style="font-size: 11px; color: var(--text-dim);">Pre-filled with test bypass token for development</span>
-        </div>
-        <button class="btn" onclick="doSignup()">Create Account</button>
-      </div>
-
-      <!-- Tab 3: OAuth -->
-      <div id="tab-oauth" class="tab-content">
-        <p style="font-size: 13px; color: var(--text-muted);">
-          OAuth 2.1 authorization code flow with server-side <strong>PKCE (S256)</strong> protection. Redirects securely to the provider and issues RS256 JWTs.
-        </p>
-
-        <button class="btn-social" onclick="startOAuth('google')">
+    <!-- Social OAuth Stack -->
+    <div class="social-stack">
+      <button class="btn-oauth" onclick="loginOAuth('google')">
+        <div class="btn-oauth-left">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          Continue with Google
-        </button>
+          <span>Continue with Google</span>
+        </div>
+        <span class="arrow-icon">&rarr;</span>
+      </button>
 
-        <button class="btn-social" onclick="startOAuth('github')">
+      <button class="btn-oauth" onclick="loginOAuth('github')">
+        <div class="btn-oauth-left">
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-          Continue with GitHub
-        </button>
+          <span>Continue with GitHub</span>
+        </div>
+        <span class="arrow-icon">&rarr;</span>
+      </button>
+    </div>
+
+    <!-- OR Divider -->
+    <div class="divider-wrap">
+      <div class="divider-line"></div>
+      <div class="divider-text">OR</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Input Form -->
+    <form id="authForm" onsubmit="submitForm(event)" style="width: 100%;">
+      <!-- Email Field -->
+      <div class="input-wrap">
+        <div class="input-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
+        <input type="email" id="email" class="glass-input" placeholder="Email address" required value="test@example.com">
       </div>
 
-      <!-- Tab 4: MFA -->
-      <div id="tab-mfa" class="tab-content">
-        <p style="font-size: 13px; color: var(--text-muted);">
-          RFC 6238 TOTP Two-Factor Authentication. Requires an active session.
-        </p>
-        <button class="btn btn-secondary" onclick="enrollMfa()">1. Generate TOTP Secret & QR</button>
-
-        <div id="mfaEnrollResult" style="display: none; flex-direction: column; gap: 12px; align-items: center; background: #0b0f19; padding: 16px; border-radius: 12px; border: 1px solid var(--surface-border);">
-          <img id="mfaQrImg" src="" alt="MFA QR Code" style="width: 160px; height: 160px; border-radius: 8px; background: white; padding: 8px;">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: #38bdf8;" id="mfaSecretText"></div>
-          <div style="width: 100%; display: flex; gap: 8px;">
-            <input type="text" id="mfaVerifyCode" class="input-field" placeholder="Enter 6-digit code" maxlength="6" style="text-align: center; font-family: var(--font-mono); letter-spacing: 3px;">
-            <button class="btn" onclick="verifyMfa()">2. Confirm & Enable</button>
-          </div>
+      <!-- Password Field -->
+      <div class="input-wrap">
+        <div class="input-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
+        <input type="password" id="password" class="glass-input" placeholder="Password" required value="mypassword123">
       </div>
 
-      <!-- Tab 5: Reset Password -->
-      <div id="tab-reset" class="tab-content">
-        <div class="form-group">
-          <label class="form-label">Send Password Reset Email</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="email" id="resetEmail" class="input-field" placeholder="user@example.com" style="flex: 1;">
-            <button class="btn btn-secondary" onclick="forgotPassword()">Send Link</button>
-          </div>
+      <!-- MFA Code Input (dynamically revealed if MFA is active) -->
+      <div class="input-wrap" id="mfaField" style="display: none;">
+        <div class="input-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
+        <input type="text" id="mfaCode" class="glass-input" placeholder="6-digit TOTP code (Authenticator)" maxlength="6">
+      </div>
 
-        <div style="border-top: 1px solid var(--surface-border); padding-top: 14px;" class="form-group">
-          <label class="form-label">Confirm Password Reset</label>
-          <input type="text" id="resetToken" class="input-field" placeholder="Paste reset token from email" style="margin-bottom: 8px;">
-          <input type="password" id="resetNewPass" class="input-field" placeholder="New password" style="margin-bottom: 8px;">
-          <button class="btn" onclick="doResetPassword()">Reset Password</button>
+      <!-- Sub-row: Remember me & Forgot password -->
+      <div class="input-subrow" id="subrow">
+        <label class="check-label">
+          <input type="checkbox" class="check-box" checked>
+          <span>Remember me</span>
+        </label>
+        <span class="link-sub" onclick="showForgotPasswordModal()">Forgot password?</span>
+      </div>
+
+      <!-- Glowing Pill Submit Button -->
+      <button type="submit" class="btn-submit" id="btnSubmit">
+        <span id="btnSubmitText">Sign In</span>
+        <span style="font-size: 16px;">&rarr;</span>
+      </button>
+    </form>
+
+    <!-- Footer Agreement -->
+    <div class="card-footer">
+      By continuing, you agree to our <a href="#">Terms of Service</a><br>and <a href="#">Privacy Policy</a>.
+    </div>
+  </div>
+
+  <!-- Floating Active Session Dock (visible when user has tokens) -->
+  <div class="session-dock" id="sessionDock">
+    <div class="dock-user">
+      <div class="dock-avatar" id="dockAvatar">Y</div>
+      <div>
+        <div style="font-size: 13px; font-weight: 700; color: #fff;" id="dockEmail">user@example.com</div>
+        <div style="font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 4px;">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: #10b981;"></span>
+          <span>RS256 Verified Session</span>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Live Session & Console -->
-    <div class="card">
+    <div class="dock-actions">
+      <button class="dock-btn" onclick="openSessionModal()">Inspect Tokens / MFA</button>
+      <button class="dock-btn" onclick="rotateRefreshToken()">Rotate Token</button>
+      <button class="dock-btn" style="color: #f87171;" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Session & MFA Inspector Modal -->
+  <div class="modal-backdrop" id="sessionModal">
+    <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 16px; font-weight: 700;">Active Session</h3>
-        <div style="display: flex; gap: 6px;">
-          <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="fetchMe()">Refresh Profile</button>
-          <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="rotateToken()">Rotate Token</button>
-          <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="doLogout()">Sign Out</button>
-        </div>
+        <h3 style="font-size: 18px; font-weight: 700;">Session Details & MFA</h3>
+        <button onclick="closeSessionModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
       </div>
 
-      <!-- User Profile Badge -->
-      <div id="userBadge" class="user-badge">
-        <div class="user-avatar" id="avatarInitial">?</div>
-        <div class="user-info">
-          <div class="user-email" id="profileEmail">Not Authenticated</div>
-          <div class="user-sub" id="profileSub">Sign in to view session & tokens</div>
-        </div>
-      </div>
-
-      <!-- Decoded JWT Inspector -->
+      <!-- Decoded JWT Claims -->
       <div>
-        <div class="form-label" style="margin-bottom: 6px;">Decoded RS256 JWT Claims</div>
-        <pre class="jwt-payload" id="decodedJwt">No active token</pre>
+        <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Decoded RS256 JWT</div>
+        <pre class="token-preview" id="modalJwt" style="color: #a7f3d0;"></pre>
       </div>
 
-      <!-- Raw Tokens -->
+      <!-- Raw Access Token -->
       <div>
-        <div class="token-header">
-          <span class="form-label">Access Token (Bearer)</span>
-          <span class="copy-chip" onclick="copyText('accessTokenBox')">Copy</span>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 6px;">
+          <span>ACCESS TOKEN (15-MIN EXPIRY)</span>
+          <span style="cursor: pointer; color: #fff;" onclick="copyFromEl('modalAt')">Copy</span>
         </div>
-        <div class="token-display" id="accessTokenBox">—</div>
+        <div class="token-preview" id="modalAt"></div>
       </div>
 
-      <div>
-        <div class="token-header">
-          <span class="form-label">Refresh Token (Stored Hashed)</span>
-          <span class="copy-chip" onclick="copyText('refreshTokenBox')">Copy</span>
-        </div>
-        <div class="token-display" id="refreshTokenBox">—</div>
-      </div>
+      <!-- TOTP MFA Setup Section -->
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+        <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Two-Factor Authentication (TOTP)</div>
+        <button class="dock-btn" id="btnEnrollMfa" onclick="enrollMfa()">Generate TOTP Secret & QR Code</button>
 
-      <!-- Real-Time Activity Log -->
-      <div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span class="form-label">Live HTTP Audit Console</span>
-          <span class="copy-chip" onclick="document.getElementById('consoleBox').innerHTML = ''">Clear</span>
-        </div>
-        <div class="console-box" id="consoleBox">
-          <div class="log-item">
-            <span class="log-time">[Init]</span>
-            <span>Amygdala testing dashboard initialized. Ready to send requests.</span>
+        <div id="mfaQrContainer" style="display: none; margin-top: 12px; flex-direction: column; align-items: center; gap: 10px;">
+          <img id="mfaQrImage" src="" alt="QR" style="width: 140px; height: 140px; border-radius: 8px; background: white; padding: 6px;">
+          <div style="font-family: var(--font-mono); font-size: 11px; color: #38bdf8;" id="mfaSecretDisplay"></div>
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <input type="text" id="mfaConfirmCode" class="glass-input" placeholder="6-digit code" maxlength="6" style="text-align: center; font-family: var(--font-mono); letter-spacing: 3px;">
+            <button class="dock-btn" onclick="verifyMfa()">Confirm</button>
           </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-backdrop" id="forgotModal">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 18px; font-weight: 700;">Reset Password</h3>
+        <button onclick="closeForgotModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: #94a3b8;">Enter your email and we'll send you a password reset link.</p>
+      <input type="email" id="forgotEmail" class="glass-input" placeholder="your-email@example.com">
+      <button class="btn-submit" onclick="sendResetEmail()">Send Reset Email</button>
+    </div>
+  </div>
 
   <script>
-    // State management
+    const API_KEY = 'b6935e519bcbfd6e9d71780c155e4617f83ca08b60210b86b0d08a645f34f145';
+    let currentMode = 'login'; // 'login' or 'signup'
     let state = {
       accessToken: localStorage.getItem('amygdala_access_token') || '',
       refreshToken: localStorage.getItem('amygdala_refresh_token') || '',
-      mfaToken: '',
-      user: null
+      mfaToken: ''
     };
 
-    // Load initial tokens from URL hash if returning from OAuth
-    window.addEventListener('DOMContentLoaded', () => {
-      // Check hash
-      const hash = window.location.hash.substring(1);
-      if (hash) {
-        const params = new URLSearchParams(hash);
-        const at = params.get('access_token');
-        const rt = params.get('refresh_token');
-        if (at) {
-          state.accessToken = at;
-          state.refreshToken = rt || '';
-          localStorage.setItem('amygdala_access_token', at);
-          if (rt) localStorage.setItem('amygdala_refresh_token', rt);
-          window.location.hash = ''; // clean hash
-          log('OAUTH', 'Received tokens via OAuth callback', 200);
-          showBanner('OAuth login successful!', 'success');
+    function getApiUrl() {
+      return document.getElementById('apiEnv').value;
+    }
+
+    function changeEnv(val) {
+      pingServer();
+    }
+
+    async function pingServer() {
+      const dot = document.getElementById('statusDot');
+      try {
+        const res = await fetch(getApiUrl() + '/health');
+        const data = await res.json();
+        if (data.status === 'ok') {
+          dot.style.background = '#10b981';
+          dot.style.boxShadow = '0 0 8px #10b981';
+          showBanner('API Connection: Online (200 OK)', 'success');
         }
+      } catch (err) {
+        dot.style.background = '#ef4444';
+        dot.style.boxShadow = '0 0 8px #ef4444';
+        showBanner('Cannot connect to ' + getApiUrl(), 'error');
       }
-
-      updateUI();
-      if (state.accessToken) {
-        fetchMe();
-      }
-    });
-
-    function getBaseUrl() {
-      return document.getElementById('apiBaseUrl').value.replace(/\/$/, '');
     }
 
-    function getApiKey() {
-      return document.getElementById('apiKey').value;
-    }
+    function switchMode(mode) {
+      currentMode = mode;
+      const tabSignIn = document.getElementById('tabSignIn');
+      const tabSignUp = document.getElementById('tabSignUp');
+      const title = document.getElementById('modeTitle');
+      const desc = document.getElementById('modeDesc');
+      const btnText = document.getElementById('btnSubmitText');
+      const subrow = document.getElementById('subrow');
 
-    function switchEnv(val) {
-      if (val === 'custom') {
-        document.getElementById('apiBaseUrl').focus();
+      if (mode === 'signup') {
+        tabSignUp.classList.add('active');
+        tabSignIn.classList.remove('active');
+        title.innerText = 'Create an account';
+        desc.innerText = 'Sign up to get started';
+        btnText.innerText = 'Sign Up';
+        subrow.style.display = 'none';
       } else {
-        document.getElementById('apiBaseUrl').value = val;
+        tabSignIn.classList.add('active');
+        tabSignUp.classList.remove('active');
+        title.innerText = 'Welcome back';
+        desc.innerText = 'Sign in to your account';
+        btnText.innerText = 'Sign In';
+        subrow.style.display = 'flex';
       }
-      checkHealth();
-    }
-
-    function log(method, endpoint, status, data) {
-      const box = document.getElementById('consoleBox');
-      const time = new Date().toLocaleTimeString();
-      const statusClass = status >= 200 && status < 300 ? 's200' : status === 401 ? 's401' : 's400';
-      
-      const el = document.createElement('div');
-      el.className = 'log-item';
-      el.innerHTML = `
-        <span class="log-time">[${time}]</span>
-        <span class="log-method">${method}</span>
-        <span class="log-status ${statusClass}">${status || ''}</span>
-        <span>${endpoint} ${data ? '<br>' + JSON.stringify(data) : ''}</span>
-      `;
-      box.appendChild(el);
-      box.scrollTop = box.scrollHeight;
     }
 
     function showBanner(msg, type = 'success') {
-      const b = document.getElementById('alertBanner');
+      const b = document.getElementById('banner');
       b.className = 'banner show ' + (type === 'success' ? 'banner-success' : 'banner-error');
       b.innerText = msg;
       setTimeout(() => b.className = 'banner', 5000);
-    }
-
-    function setTab(name) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('tab-' + name).classList.add('active');
-    }
-
-    function copyText(id) {
-      const text = document.getElementById(id).innerText;
-      if (text && text !== '—') {
-        navigator.clipboard.writeText(text);
-        showBanner('Copied to clipboard!', 'success');
-      }
     }
 
     function parseJwt(token) {
@@ -685,283 +858,245 @@
       }
     }
 
-    function updateUI() {
-      document.getElementById('accessTokenBox').innerText = state.accessToken || '—';
-      document.getElementById('refreshTokenBox').innerText = state.refreshToken || '—';
-
+    function syncSession() {
+      const dock = document.getElementById('sessionDock');
       if (state.accessToken) {
         const decoded = parseJwt(state.accessToken);
         if (decoded) {
-          document.getElementById('decodedJwt').innerText = JSON.stringify(decoded, null, 2);
-          document.getElementById('profileEmail').innerText = decoded.email || 'Authenticated User';
-          document.getElementById('profileSub').innerText = 'User ID: ' + decoded.sub;
-          document.getElementById('avatarInitial').innerText = (decoded.email ? decoded.email[0] : 'U').toUpperCase();
-        }
-      } else {
-        document.getElementById('decodedJwt').innerText = 'No active token';
-        document.getElementById('profileEmail').innerText = 'Not Authenticated';
-        document.getElementById('profileSub').innerText = 'Sign in to view session & tokens';
-        document.getElementById('avatarInitial').innerText = '?';
-      }
-    }
-
-    // API Calls
-    async function checkHealth() {
-      const pill = document.getElementById('statusPill');
-      const text = document.getElementById('statusText');
-      try {
-        const res = await fetch(getBaseUrl() + '/health');
-        const data = await res.json();
-        if (data.status === 'ok') {
-          pill.style.background = 'rgba(16, 185, 129, 0.12)';
-          pill.style.color = '#34d399';
-          text.innerText = 'Connected (200 OK)';
-          log('GET', '/health', 200, data);
-        } else {
-          throw new Error();
-        }
-      } catch (e) {
-        pill.style.background = 'rgba(239, 68, 68, 0.15)';
-        pill.style.color = '#f87171';
-        text.innerText = 'Offline / Error';
-        log('GET', '/health', 'ERR', { error: 'Could not connect to API' });
-      }
-    }
-
-    async function doSignup() {
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
-      const turnstileToken = document.getElementById('signupTurnstile').value;
-
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
-          body: JSON.stringify({ email, password, turnstileToken })
-        });
-        const data = await res.json();
-        log('POST', '/v1/auth/signup', res.status, data);
-
-        if (!res.ok) throw new Error(data.error || 'Signup failed');
-
-        state.accessToken = data.accessToken;
-        state.refreshToken = data.refreshToken;
-        localStorage.setItem('amygdala_access_token', data.accessToken);
-        localStorage.setItem('amygdala_refresh_token', data.refreshToken);
-        updateUI();
-        showBanner('Account created and logged in!', 'success');
-      } catch (err) {
-        showBanner(err.message, 'error');
-      }
-    }
-
-    async function doLogin() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        log('POST', '/v1/auth/login', res.status, data);
-
-        if (!res.ok) throw new Error(data.error || 'Login failed');
-
-        if (data.mfaRequired) {
-          state.mfaToken = data.mfaToken;
-          document.getElementById('mfaPrompt').style.display = 'block';
-          showBanner('MFA Required! Please enter your 6-digit authenticator code.', 'error');
+          document.getElementById('dockEmail').innerText = decoded.email || 'Authenticated User';
+          document.getElementById('dockAvatar').innerText = (decoded.email ? decoded.email[0] : 'U').toUpperCase();
+          document.getElementById('modalJwt').innerText = JSON.stringify(decoded, null, 2);
+          document.getElementById('modalAt').innerText = state.accessToken;
+          dock.style.display = 'flex';
           return;
         }
+      }
+      dock.style.display = 'none';
+    }
 
-        state.accessToken = data.accessToken;
-        state.refreshToken = data.refreshToken;
-        localStorage.setItem('amygdala_access_token', data.accessToken);
-        localStorage.setItem('amygdala_refresh_token', data.refreshToken);
-        updateUI();
-        showBanner('Signed in successfully!', 'success');
-      } catch (err) {
-        showBanner(err.message, 'error');
+    // Form submission (Login / Signup / MFA)
+    async function submitForm(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Handle MFA Completion
+      if (state.mfaToken) {
+        const code = document.getElementById('mfaCode').value;
+        try {
+          const res = await fetch(getApiUrl() + '/v1/auth/mfa/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
+              'Authorization': 'Bearer ' + state.mfaToken
+            },
+            body: JSON.stringify({ code })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Invalid MFA code');
+          state.accessToken = data.accessToken;
+          state.refreshToken = data.refreshToken;
+          state.mfaToken = '';
+          localStorage.setItem('amygdala_access_token', data.accessToken);
+          localStorage.setItem('amygdala_refresh_token', data.refreshToken);
+          document.getElementById('mfaField').style.display = 'none';
+          syncSession();
+          showBanner('Signed in with MFA successfully!', 'success');
+        } catch (err) {
+          showBanner(err.message, 'error');
+        }
+        return;
+      }
+
+      if (currentMode === 'login') {
+        try {
+          const res = await fetch(getApiUrl() + '/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Login failed');
+
+          if (data.mfaRequired) {
+            state.mfaToken = data.mfaToken;
+            document.getElementById('mfaField').style.display = 'block';
+            document.getElementById('btnSubmitText').innerText = 'Verify MFA Code';
+            showBanner('MFA is enabled on this account! Please enter 6-digit code.', 'error');
+            return;
+          }
+
+          state.accessToken = data.accessToken;
+          state.refreshToken = data.refreshToken;
+          localStorage.setItem('amygdala_access_token', data.accessToken);
+          localStorage.setItem('amygdala_refresh_token', data.refreshToken);
+          syncSession();
+          showBanner('Welcome back! Signed in successfully.', 'success');
+        } catch (err) {
+          showBanner(err.message, 'error');
+        }
+      } else {
+        // Signup
+        try {
+          const res = await fetch(getApiUrl() + '/v1/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+            body: JSON.stringify({ email, password, turnstileToken: 'test' })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Signup failed');
+          state.accessToken = data.accessToken;
+          state.refreshToken = data.refreshToken;
+          localStorage.setItem('amygdala_access_token', data.accessToken);
+          localStorage.setItem('amygdala_refresh_token', data.refreshToken);
+          syncSession();
+          showBanner('Account created! Signed in.', 'success');
+        } catch (err) {
+          showBanner(err.message, 'error');
+        }
       }
     }
 
-    async function submitMfaLogin() {
-      const code = document.getElementById('mfaLoginCode').value;
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/mfa/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': getApiKey(),
-            'Authorization': 'Bearer ' + state.mfaToken
-          },
-          body: JSON.stringify({ code })
-        });
-        const data = await res.json();
-        log('POST', '/v1/auth/mfa/verify', res.status, data);
-
-        if (!res.ok) throw new Error(data.error || 'MFA failed');
-
-        state.accessToken = data.accessToken;
-        state.refreshToken = data.refreshToken;
-        localStorage.setItem('amygdala_access_token', data.accessToken);
-        localStorage.setItem('amygdala_refresh_token', data.refreshToken);
-        document.getElementById('mfaPrompt').style.display = 'none';
-        updateUI();
-        showBanner('MFA Login completed!', 'success');
-      } catch (err) {
-        showBanner(err.message, 'error');
-      }
-    }
-
-    function startOAuth(provider) {
-      const url = getBaseUrl() + `/v1/auth/oauth/${provider}?api_key=` + encodeURIComponent(getApiKey());
-      log('GET', `/v1/auth/oauth/${provider}`, 302, { redirect: url });
+    function loginOAuth(provider) {
+      const url = getApiUrl() + `/v1/auth/oauth/${provider}?api_key=` + encodeURIComponent(API_KEY);
       window.location.href = url;
     }
 
-    async function fetchMe() {
-      if (!state.accessToken) return showBanner('No access token available', 'error');
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/me', {
-          headers: { 'Authorization': 'Bearer ' + state.accessToken, 'x-api-key': getApiKey() }
-        });
-        const data = await res.json();
-        log('GET', '/v1/auth/me', res.status, data);
-        if (res.ok) {
-          showBanner('Profile fetched successfully', 'success');
-        } else {
-          showBanner(data.error || 'Failed to fetch profile', 'error');
-        }
-      } catch (err) {
-        showBanner(err.message, 'error');
-      }
-    }
-
-    async function rotateToken() {
-      if (!state.refreshToken) return showBanner('No refresh token available', 'error');
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/refresh', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
-          body: JSON.stringify({ refreshToken: state.refreshToken })
-        });
-        const data = await res.json();
-        log('POST', '/v1/auth/refresh', res.status, data);
-
-        if (!res.ok) throw new Error(data.error || 'Refresh failed');
-
-        state.accessToken = data.accessToken;
-        state.refreshToken = data.refreshToken;
-        localStorage.setItem('amygdala_access_token', data.accessToken);
-        localStorage.setItem('amygdala_refresh_token', data.refreshToken);
-        updateUI();
-        showBanner('Refresh token rotated & new RS256 JWT issued!', 'success');
-      } catch (err) {
-        showBanner(err.message, 'error');
-      }
-    }
-
-    async function doLogout() {
-      if (state.refreshToken) {
-        try {
-          const res = await fetch(getBaseUrl() + '/v1/auth/logout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
-            body: JSON.stringify({ refreshToken: state.refreshToken })
-          });
-          const data = await res.json();
-          log('POST', '/v1/auth/logout', res.status, data);
-        } catch (e) {}
-      }
-
-      state.accessToken = '';
-      state.refreshToken = '';
-      localStorage.removeItem('amygdala_access_token');
-      localStorage.removeItem('amygdala_refresh_token');
-      updateUI();
-      showBanner('Signed out successfully', 'success');
-    }
-
     async function enrollMfa() {
-      if (!state.accessToken) return showBanner('Please log in first to enroll MFA', 'error');
+      if (!state.accessToken) return showBanner('Log in first to set up MFA', 'error');
+      const btn = document.getElementById('btnEnrollMfa');
+      btn.innerText = 'Generating...';
       try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/mfa/enroll', {
+        const res = await fetch(getApiUrl() + '/v1/auth/mfa/enroll', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + state.accessToken, 'x-api-key': getApiKey() }
+          headers: {
+            'Authorization': 'Bearer ' + state.accessToken,
+            'x-api-key': API_KEY
+          }
         });
         const data = await res.json();
-        log('POST', '/v1/auth/mfa/enroll', res.status, data);
-
+        btn.innerText = 'Generate TOTP Secret & QR Code';
         if (!res.ok) throw new Error(data.error || 'Failed to enroll MFA');
 
-        document.getElementById('mfaQrImg').src = data.qrCode;
-        document.getElementById('mfaSecretText').innerText = 'Secret: ' + data.secret;
-        document.getElementById('mfaEnrollResult').style.display = 'flex';
-        showBanner('Scan the QR code with Google Authenticator or 1Password', 'success');
+        document.getElementById('mfaQrImage').src = data.qrCode;
+        document.getElementById('mfaSecretDisplay').innerText = 'Key: ' + data.secret;
+        document.getElementById('mfaQrContainer').style.display = 'flex';
+        showBanner('Scan the QR code in Google Authenticator', 'success');
       } catch (err) {
+        btn.innerText = 'Generate TOTP Secret & QR Code';
         showBanner(err.message, 'error');
       }
     }
 
     async function verifyMfa() {
-      const code = document.getElementById('mfaVerifyCode').value;
+      const code = document.getElementById('mfaConfirmCode').value;
       try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/mfa/verify', {
+        const res = await fetch(getApiUrl() + '/v1/auth/mfa/verify', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': getApiKey(),
+            'x-api-key': API_KEY,
             'Authorization': 'Bearer ' + state.accessToken
           },
           body: JSON.stringify({ code })
         });
         const data = await res.json();
-        log('POST', '/v1/auth/mfa/verify', res.status, data);
-
-        if (!res.ok) throw new Error(data.error || 'Verification failed');
-        showBanner('MFA successfully enabled on your account!', 'success');
+        if (!res.ok) throw new Error(data.error || 'Invalid verification code');
+        showBanner('MFA enabled! Next login will require 6-digit code.', 'success');
       } catch (err) {
         showBanner(err.message, 'error');
       }
     }
 
-    async function forgotPassword() {
-      const email = document.getElementById('resetEmail').value;
+    async function rotateRefreshToken() {
+      if (!state.refreshToken) return showBanner('No refresh token present', 'error');
       try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/forgot-password', {
+        const res = await fetch(getApiUrl() + '/v1/auth/refresh', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
+          headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+          body: JSON.stringify({ refreshToken: state.refreshToken })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Rotation failed');
+        state.accessToken = data.accessToken;
+        state.refreshToken = data.refreshToken;
+        localStorage.setItem('amygdala_access_token', data.accessToken);
+        localStorage.setItem('amygdala_refresh_token', data.refreshToken);
+        syncSession();
+        showBanner('Refresh token rotated! Fresh RS256 token issued.', 'success');
+      } catch (err) {
+        showBanner(err.message, 'error');
+      }
+    }
+
+    async function logout() {
+      if (state.refreshToken) {
+        try {
+          await fetch(getApiUrl() + '/v1/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+            body: JSON.stringify({ refreshToken: state.refreshToken })
+          });
+        } catch(e) {}
+      }
+      state.accessToken = '';
+      state.refreshToken = '';
+      localStorage.removeItem('amygdala_access_token');
+      localStorage.removeItem('amygdala_refresh_token');
+      syncSession();
+      showBanner('Signed out', 'success');
+    }
+
+    function openSessionModal() { document.getElementById('sessionModal').style.display = 'flex'; }
+    function closeSessionModal() { document.getElementById('sessionModal').style.display = 'none'; }
+    function showForgotPasswordModal() { document.getElementById('forgotModal').style.display = 'flex'; }
+    function closeForgotModal() { document.getElementById('forgotModal').style.display = 'none'; }
+
+    function copyFromEl(id) {
+      const text = document.getElementById(id).innerText;
+      if (text) {
+        navigator.clipboard.writeText(text);
+        showBanner('Copied to clipboard!', 'success');
+      }
+    }
+
+    async function sendResetEmail() {
+      const email = document.getElementById('forgotEmail').value;
+      if (!email) return;
+      try {
+        const res = await fetch(getApiUrl() + '/v1/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
           body: JSON.stringify({ email })
         });
         const data = await res.json();
-        log('POST', '/v1/auth/forgot-password', res.status, data);
-        showBanner(data.message || 'Request sent', 'success');
+        showBanner(data.message || 'Reset link sent!', 'success');
+        closeForgotModal();
       } catch (err) {
         showBanner(err.message, 'error');
       }
     }
 
-    async function doResetPassword() {
-      const token = document.getElementById('resetToken').value;
-      const newPassword = document.getElementById('resetNewPass').value;
-      try {
-        const res = await fetch(getBaseUrl() + '/v1/auth/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
-          body: JSON.stringify({ token, newPassword })
-        });
-        const data = await res.json();
-        log('POST', '/v1/auth/reset-password', res.status, data);
-        if (!res.ok) throw new Error(data.error || 'Password reset failed');
-        showBanner('Password reset successfully! Please sign in with your new password.', 'success');
-      } catch (err) {
-        showBanner(err.message, 'error');
+    // Auto-load OAuth tokens if redirected back with hash
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash ? window.location.hash.substring(1) : '';
+      if (hash) {
+        const params = new URLSearchParams(hash);
+        const at = params.get('access_token');
+        const rt = params.get('refresh_token');
+        if (at) {
+          state.accessToken = at;
+          if (rt) state.refreshToken = rt;
+          localStorage.setItem('amygdala_access_token', at);
+          if (rt) localStorage.setItem('amygdala_refresh_token', rt);
+          window.location.hash = '';
+          showBanner('Signed in via OAuth successfully!', 'success');
+        }
       }
-    }
+      syncSession();
+      pingServer();
+    });
   </script>
 </body>
 </html>

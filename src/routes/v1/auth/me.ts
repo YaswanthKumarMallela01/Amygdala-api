@@ -5,7 +5,7 @@ import { logger } from '../../../utils/logger';
 
 const router = Router();
 
-router.get('/', authMiddleware(), async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.user?.sub;
     if (!userId) {
