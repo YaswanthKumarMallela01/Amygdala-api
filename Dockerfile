@@ -18,6 +18,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/src/db/migrations ./src/db/migrations
+COPY --from=builder /app/test-client.html ./test-client.html
 
 EXPOSE 3000
 

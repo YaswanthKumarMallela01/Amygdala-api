@@ -4,6 +4,16 @@ import { hashToken } from '../utils/crypto';
 import { logger } from '../utils/logger';
 
 export async function apiKeyMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Handle CORS preflight OPTIONS requests immediately
+  if (req.method === 'OPTIONS') {
+    const origin = req.header('Origin') || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    return res.status(204).end();
+  }
+
   // Allow OAuth callbacks and public JWKS endpoint without API key
   if (
     req.path.includes('/oauth/google/callback') ||
@@ -35,15 +45,20 @@ export async function apiKeyMiddleware(req: Request, res: Response, next: NextFu
     req.apiClient = client;
 
     const origin = req.header('Origin');
-    if (origin && client.allowed_origins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    }
+    if (origin) {
+      const isAllowed =
+        client.allowed_origins.includes('*') ||
+        client.allowed_origins.includes(origin) ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('onrender.com');
 
-    if (req.method === 'OPTIONS') {
-        return res.status(204).end();
+      if (isAllowed) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      }
     }
     
     next();
