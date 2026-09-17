@@ -8,7 +8,7 @@ export async function createRefreshToken(userId: string, deviceInfo?: string): P
   const tokenHash = hashToken(rawToken);
   const familyId = crypto.randomUUID();
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+  expiresAt.setDate(expiresAt.getDate() + 2); // 2 days only (session limit)
 
   await query(
     `INSERT INTO refresh_tokens (user_id, token_hash, family_id, expires_at, device_info)
@@ -57,7 +57,7 @@ export async function rotateRefreshToken(rawToken: string): Promise<{ rawToken: 
   const newRawToken = generateRandomToken();
   const newTokenHash = hashToken(newRawToken);
   const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 30);
+  expiresAt.setDate(expiresAt.getDate() + 2); // 2 days only (session limit)
 
   await query(
     `INSERT INTO refresh_tokens (user_id, token_hash, family_id, expires_at, device_info)
