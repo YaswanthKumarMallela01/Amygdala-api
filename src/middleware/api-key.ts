@@ -4,7 +4,20 @@ import { hashToken } from '../utils/crypto';
 import { logger } from '../utils/logger';
 
 export async function apiKeyMiddleware(req: Request, res: Response, next: NextFunction) {
-  const apiKey = req.header('x-api-key');
+  // Allow OAuth callbacks and public JWKS endpoint without API key
+  if (
+    req.path.includes('/oauth/google/callback') ||
+    req.path.includes('/oauth/github/callback') ||
+    req.path.includes('/.well-known/jwks.json')
+  ) {
+    return next();
+  }
+
+  const apiKey =
+    req.header('x-api-key') ||
+    (req.query['x-api-key'] as string) ||
+    (req.query['apiKey'] as string) ||
+    (req.query['api_key'] as string);
   
   if (!apiKey) {
     return res.status(401).json({ error: 'Missing API key' });
