@@ -8,7 +8,9 @@ import authRouter from './routes/v1/auth';
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 app.use(createRateLimiter());
@@ -21,6 +23,7 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 // Auth callback landing page for browser testing
 app.get('/auth/callback', (_req, res) => {
+  res.removeHeader('Content-Security-Policy');
   res.setHeader('Content-Type', 'text/html');
   res.send(`<!DOCTYPE html>
 <html lang="en">
