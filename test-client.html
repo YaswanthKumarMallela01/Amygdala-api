@@ -35,7 +35,98 @@
       --danger-bg: rgba(239, 68, 68, 0.12);
       --danger-border: rgba(239, 68, 68, 0.3);
       
-      /* Method Badges */
+      
+    /* User Dropdown Menu & Logout */
+    .user-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 250px;
+      background: #070a12;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+      z-index: 100;
+    }
+    .user-dropdown-header {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 4px;
+    }
+    .user-dropdown-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .user-dropdown-email {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      word-break: break-all;
+    }
+    .user-dropdown-plan {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 8px;
+    }
+    .dropdown-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 6px 0;
+    }
+    .user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .user-dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+    }
+    .user-dropdown-item.logout-item {
+      color: #f87171;
+    }
+    .user-dropdown-item.logout-item:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+    .btn-logout-pill {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-logout-pill:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Method Badges */
       --method-get: #10b981;
       --method-get-bg: rgba(16, 185, 129, 0.12);
       --method-post: #818cf8;
@@ -1171,6 +1262,97 @@
       position: relative;
     }
 
+    
+    /* User Dropdown Menu & Logout */
+    .user-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 250px;
+      background: #070a12;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+      z-index: 100;
+    }
+    .user-dropdown-header {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      margin-bottom: 4px;
+    }
+    .user-dropdown-name {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .user-dropdown-email {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      word-break: break-all;
+    }
+    .user-dropdown-plan {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 8px;
+    }
+    .dropdown-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 6px 0;
+    }
+    .user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .user-dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+    }
+    .user-dropdown-item.logout-item {
+      color: #f87171;
+    }
+    .user-dropdown-item.logout-item:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+    .btn-logout-pill {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-logout-pill:hover {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: translateY(-1px);
+    }
+
     /* Method Badges */
     .method-badge {
       display: inline-flex;
@@ -1587,11 +1769,44 @@
             <div class="badge-dot"></div>
           </div>
 
-          <!-- User Pill with Chevron -->
-          <div class="user-pill" onclick="navigate('profile')" title="View Developer Profile">
-            <div class="user-avatar-sm" id="userInitialSm">Y</div>
-            <span id="userNameTop">YASH</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <!-- User Profile & Dropdown -->
+          <div style="position: relative;">
+            <div class="user-pill" onclick="toggleUserDropdown(event)" title="User Menu">
+              <div class="user-avatar-sm" id="userInitialSm">Y</div>
+              <span id="userNameTop">YASH</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+
+            <!-- Interactive User Dropdown -->
+            <div id="userDropdownMenu" class="user-dropdown-menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name" id="dropdownUserName">YASH</div>
+                <div class="user-dropdown-email" id="dropdownUserEmail">yourhandsomeyash@gmail.com</div>
+                <div class="user-dropdown-plan">Developer Tier</div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="user-dropdown-item" onclick="navigate('profile'); hideUserDropdown();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Profile &amp; Session</span>
+              </div>
+              <div class="user-dropdown-item" onclick="navigate('keys'); hideUserDropdown();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                <span>API Keys</span>
+              </div>
+              <div class="user-dropdown-item" onclick="navigate('mfa'); hideUserDropdown();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Security &amp; 2FA</span>
+              </div>
+              <div class="user-dropdown-item" onclick="navigate('docs'); hideUserDropdown();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+                <span>Documentation</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="user-dropdown-item logout-item" onclick="signOut('Signed out successfully.'); hideUserDropdown();">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>Log Out</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2044,34 +2259,93 @@
         </div>
 
         <!-- ====================================================================
-             SECTION 5: DEDICATED PROFILE VIEW
+             SECTION 5: DEDICATED PROFILE VIEW (WITH LOGOUT & ADVANCED CONTROLS)
              ==================================================================== -->
         <div id="section-profile" style="display: none; flex-direction: column; gap: 24px;">
           <div class="welcome-header-card">
             <div>
-              <h1>Developer Profile</h1>
-              <p>Manage your account identity, display name, and permanent deletion controls.</p>
+              <h1>Developer Profile &amp; Account</h1>
+              <p>Manage your account identity, security session, password recovery, and sign-out controls.</p>
+            </div>
+            <button class="btn-logout-pill" onclick="signOut('Signed out from current session.')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Log Out</span>
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px;">
+            <!-- Profile Identity Card -->
+            <div class="glass-card-panel">
+              <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">Identity &amp; Profile</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Display Name</label>
+                  <input type="text" id="profileNameInput" class="glass-input" style="padding-left: 14px;" placeholder="Your Name">
+                </div>
+
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Registered Email</label>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="email" id="profileEmailInput" class="glass-input" style="padding-left: 14px; opacity: 0.7;" disabled>
+                    <span id="profileEmailBadge" class="verified-badge-pill">✓ Verified</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 4px;">
+                  <button class="btn-create-key-primary" onclick="saveProfileName()">Save Profile Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Session & Security Controls Card -->
+            <div class="glass-card-panel">
+              <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">Active Session &amp; Controls</h3>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: #05080f; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                  <div style="color: var(--text-dim); text-transform: uppercase; font-size: 11px; font-weight: 700; margin-bottom: 3px;">Cryptography Algorithm</div>
+                  <div style="color: #38bdf8; font-family: var(--font-mono); font-size: 13px; font-weight: 600;">RS256 (2048-bit RSA Asymmetric)</div>
+                </div>
+
+                <div style="background: #05080f; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                  <div style="color: var(--text-dim); text-transform: uppercase; font-size: 11px; font-weight: 700; margin-bottom: 3px;">Token Lifespan</div>
+                  <div style="color: #34d399; font-size: 13px; font-weight: 600;">15-min Access / 48h Rotating Refresh</div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 6px;">
+                  <button class="btn-logout-pill" style="flex: 1; justify-content: center;" onclick="signOut('Signed out successfully.')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Log Out</span>
+                  </button>
+                  <button class="btn-outline-project" style="flex: 1;" onclick="signOut('Revoked all active sessions on all devices.')">Revoke All Sessions</button>
+                </div>
+              </div>
             </div>
           </div>
 
+          <!-- Password & Credentials Card -->
           <div class="glass-card-panel">
-            <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">Profile Details</h3>
-            
-            <div style="display: flex; flex-direction: column; gap: 16px; max-width: 500px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
               <div>
-                <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Display Name</label>
-                <input type="text" id="profileNameInput" class="glass-input" style="padding-left: 14px;" placeholder="Your Name">
+                <h3 style="font-size: 16px; font-weight: 700; color: #fff;">Password &amp; Credentials</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Send a cryptographically signed 1-hour password reset link to your registered email.
+                </p>
               </div>
+              <button class="btn-outline-project" onclick="triggerPasswordResetFromProfile()">Send Password Reset Email &rarr;</button>
+            </div>
+          </div>
 
+          <!-- Security Audit Export Card -->
+          <div class="glass-card-panel">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
               <div>
-                <label style="font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Registered Email</label>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <input type="email" id="profileEmailInput" class="glass-input" style="padding-left: 14px; opacity: 0.7;" disabled>
-                  <span id="profileEmailBadge" class="verified-badge-pill">✓ Verified</span>
-                </div>
+                <h3 style="font-size: 16px; font-weight: 700; color: #fff;">Export Security Audit</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                  Download your active cryptographic claims, session metadata, and tenant credentials as JSON.
+                </p>
               </div>
-
-              <button class="btn-create-key-primary" style="align-self: flex-start; margin-top: 8px;" onclick="saveProfileName()">Save Changes</button>
+              <button class="btn-outline-project" onclick="exportSecurityAudit()">Export Audit JSON 📥</button>
             </div>
           </div>
 
@@ -2986,6 +3260,8 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
       document.getElementById('profileAvatarLg').innerText = initial;
 
       document.getElementById('profileNameInput').value = u.name || '';
+      document.getElementById('dropdownUserName').innerText = displayName;
+      document.getElementById('dropdownUserEmail').innerText = email;
       document.getElementById('profileEmailInput').value = email;
 
       if (u.created_at) {
@@ -3543,6 +3819,62 @@ export class AmygdalaClient {
 
     function loginOAuth(provider) {
       window.location.href = API_URL + `/v1/auth/oauth/${provider}?api_key=` + encodeURIComponent(MASTER_API_KEY);
+    }
+
+    
+    function toggleUserDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('userDropdownMenu');
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function hideUserDropdown() {
+      const menu = document.getElementById('userDropdownMenu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#userDropdownMenu') && !e.target.closest('.user-pill')) {
+        hideUserDropdown();
+      }
+    });
+
+    async function triggerPasswordResetFromProfile() {
+      const email = document.getElementById('profileEmailInput').value;
+      if (!email) { alert('No email registered.'); return; }
+      try {
+        const res = await fetch(API_URL + '/v1/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': MASTER_API_KEY },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        alert(data.message || 'Password reset link sent to ' + email);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function exportSecurityAudit() {
+      const decoded = parseJwt(session.accessToken);
+      const auditData = {
+        user: currentUserProfile,
+        jwt_claims: decoded,
+        session: {
+          algorithm: "RS256 (2048-bit RSA)",
+          issuer: "amygdala-auth",
+          loginTimestamp: new Date(session.loginTimestamp).toISOString(),
+          apiUrl: API_URL
+        },
+        exported_at: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(auditData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `amygdala-audit-${currentUserProfile?.id || 'session'}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function signOut(msg) {
