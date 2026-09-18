@@ -1,30 +1,60 @@
-# Amygdala 🧠
+<div align="center">
 
-> **Production-grade Authentication-as-a-Service API** — Multi-tenant auth with JWTs, refresh token rotation, OAuth 2.1 (Google & GitHub with PKCE), TOTP MFA, Cloudflare Turnstile bot protection, and Redis-backed rate limiting.
+# 🧠 Amygdala
+
+**Production-grade Authentication-as-a-Service API**
+
+Multi-tenant auth with JWTs, refresh token rotation, OAuth 2.1, TOTP MFA,
+Cloudflare Turnstile bot protection, and Redis-backed rate limiting.
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)](https://supabase.com/)
+[![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D?logo=redis&logoColor=white)](https://upstash.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+[Live API](https://amygdala-api-37nt.onrender.com) · [Test Dashboard](https://amygdala-api-37nt.onrender.com/test) · [JWKS](https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json)
+
+</div>
+
+---
+
+## What is Amygdala?
+
+Amygdala is a **drop-in authentication backend** that you plug into any frontend or mobile app. Instead of building auth from scratch, you:
+
+1. Get an **API key** (via the dashboard or CLI)
+2. Send `x-api-key` on every request
+3. Get back **RS256 JWTs** and **rotating refresh tokens**
+
+It handles signup, login, OAuth (Google & GitHub with PKCE), TOTP MFA, password reset, token rotation with theft detection, and bot protection — so you don't have to.
+
+---
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Node.js 18+ |
-| Language | TypeScript (CommonJS) |
-| Framework | Express 4.x |
-| Database | PostgreSQL (Supabase-hosted) |
-| Cache/Rate-limit | Redis (Upstash) |
-| Password Hashing | Argon2id |
-| JWT | RS256 (jsonwebtoken + Node crypto) |
-| OAuth | Google & GitHub with PKCE |
-| MFA | TOTP via otplib (RFC 6238) |
-| Email | Resend |
-| Bot Protection | Cloudflare Turnstile |
-| Validation | Zod |
-| Logging | Pino (structured JSON) |
+| Layer | Technology |
+|---|---|
+| **Runtime** | Node.js 18+ |
+| **Language** | TypeScript |
+| **Framework** | Express 4.x |
+| **Database** | PostgreSQL (Supabase) |
+| **Cache / Rate Limiting** | Redis (Upstash) |
+| **Password Hashing** | Argon2id |
+| **JWT** | RS256 — 2048-bit RSA, 15-min access tokens |
+| **OAuth** | Google (PKCE / S256) & GitHub |
+| **MFA** | TOTP (RFC 6238) via `otplib` |
+| **Email** | Resend |
+| **Bot Protection** | Cloudflare Turnstile |
+| **Validation** | Zod |
+| **Logging** | Pino (structured JSON) |
 
 ---
 
 ## Quick Start
 
-### 1. Clone & Install
+### 1 · Clone & Install
 
 ```bash
 git clone https://github.com/YaswanthKumarMallela01/Amygdala-api.git
@@ -32,86 +62,138 @@ cd Amygdala-api
 npm install
 ```
 
-### 2. Generate RSA Keypair
+### 2 · Generate RSA Keypair
 
 ```bash
 openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in private.pem -out public.pem
 ```
 
-### 3. Configure Environment
-
-Copy `.env.example` to `.env` and fill in all values:
+### 3 · Configure Environment
 
 ```bash
 cp .env.example .env
+# Fill in all values — see the Environment Variables section below
 ```
 
-### 4. Run Database Migration
+### 4 · Run Database Migration
 
 ```bash
 npm run migrate
 ```
 
-### 5. Create Your First API Client
+### 5 · Create Your First API Client
 
 ```bash
 npm run create-client -- --name "My App" --origins "http://localhost:3000,https://myapp.com"
 ```
 
-> ⚠️ **Save the API key** — it's shown only once and stored as a one-way hash.
+> [!WARNING]
+> **Save the API key immediately** — it's displayed once and stored as a one-way SHA-256 hash. There is no way to retrieve it later.
 
-### 6. Start the Server
+### 6 · Start the Server
 
 ```bash
-# Development (with hot reload)
+# Development (hot reload)
 npm run dev
 
 # Production
-npm run build
-npm start
+npm run build && npm start
 ```
 
 ---
 
 ## Environment Variables
 
-All 14 variables are **required** (none hardcoded). See the implementation plan for step-by-step instructions on obtaining each one.
+Copy `.env.example` → `.env` and fill in every value. All variables are **required** (none hardcoded).
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | Supabase PostgreSQL connection string | `postgresql://postgres.ref:pw@pooler.supabase.com:6543/postgres` |
-| `GOOGLE_CLIENT_ID` | Google OAuth 2.0 client ID | `xxxxx.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 client secret | `GOCSPX-xxxxx` |
-| `GOOGLE_REDIRECT_URI` | Google OAuth callback URL | `https://api.example.com/v1/auth/oauth/google/callback` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID | `Ov23li...` |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret | `xxxxx` |
-| `GITHUB_REDIRECT_URI` | GitHub OAuth callback URL | `https://api.example.com/v1/auth/oauth/github/callback` |
-| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key | `0x4AAAAAAA...` |
-| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key | `0x4AAAAAAA...` |
-| `RESEND_API_KEY` | Resend email service API key | `re_xxxxx` |
-| `JWT_PRIVATE_KEY` | RS256 private key (PEM format, `\n` for newlines) | `-----BEGIN PRIVATE KEY-----\nMIIE...` |
-| `JWT_PUBLIC_KEY` | RS256 public key (PEM format) | `-----BEGIN PUBLIC KEY-----\nMIIB...` |
-| `REDIS_URL` | Upstash Redis connection string | `rediss://default:xxx@us1-xxx.upstash.io:6379` |
-| `APP_BASE_URL` | Your frontend's base URL | `https://myapp.com` |
-| `PORT` | Server port (optional, default 3000) | `3000` |
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (Supabase) |
+| `GOOGLE_CLIENT_ID` | Google OAuth 2.0 client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 client secret |
+| `GOOGLE_REDIRECT_URI` | Google OAuth callback URL |
+| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App secret |
+| `GITHUB_REDIRECT_URI` | GitHub OAuth callback URL |
+| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key |
+| `RESEND_API_KEY` | Resend email API key |
+| `JWT_PRIVATE_KEY` | RS256 private key (PEM, use `\\n` for newlines) |
+| `JWT_PUBLIC_KEY` | RS256 public key (PEM) |
+| `REDIS_URL` | Upstash Redis connection string |
+| `APP_BASE_URL` | Your frontend's base URL |
+| `PORT` | Server port (default: `3000`) |
 
 ---
 
-## API Endpoints
+## API Reference
 
-All endpoints require the `x-api-key` header.
+> **Base URL:** `https://amygdala-api-37nt.onrender.com`
+>
+> All `/v1/auth/*` endpoints require the `x-api-key` header unless noted otherwise.
 
 ### Authentication
 
-#### POST `/v1/auth/signup`
-Create a new account.
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/v1/auth/signup` | API Key | Create account (Turnstile required) |
+| `POST` | `/v1/auth/login` | API Key | Login (Turnstile conditional after 3 failures) |
+| `POST` | `/v1/auth/refresh` | API Key | Rotate refresh token → new token pair |
+| `POST` | `/v1/auth/logout` | API Key | Revoke a refresh token |
+
+### Password Reset
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/v1/auth/forgot-password` | API Key | Send reset email (generic response, no enumeration) |
+| `POST` | `/v1/auth/reset-password` | API Key | Reset password with email token |
+
+### MFA (TOTP)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/v1/auth/mfa/enroll` | API Key + Bearer | Generate TOTP secret & QR code |
+| `POST` | `/v1/auth/mfa/verify` | API Key + Bearer | Confirm enrollment OR complete MFA login |
+
+### OAuth 2.1
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/v1/auth/oauth/google` | API Key | Redirect to Google (PKCE) |
+| `GET` | `/v1/auth/oauth/github` | API Key | Redirect to GitHub |
+| `GET` | `/v1/auth/oauth/google/callback` | — | Google callback (public) |
+| `GET` | `/v1/auth/oauth/github/callback` | — | GitHub callback (public) |
+
+### User & Keys
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/v1/auth/me` | API Key + Bearer | Get current user profile |
+| `GET` | `/v1/auth/keys` | API Key + Bearer | List your API keys |
+| `POST` | `/v1/auth/keys` | API Key + Bearer | Generate new API key (max 3) |
+| `DELETE` | `/v1/auth/keys/:id` | API Key + Bearer | Delete an API key |
+
+### Public
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/v1/auth/.well-known/jwks.json` | — | RSA public key (JWKS format) |
+| `GET` | `/health` | — | Health check |
+
+---
+
+### Endpoint Details
+
+<details>
+<summary><strong>POST /v1/auth/signup</strong></summary>
+
 ```json
 // Request
 {
   "email": "user@example.com",
   "password": "securePassword123",
-  "turnstileToken": "cf-turnstile-response-token"
+  "turnstileToken": "cf-turnstile-response"
 }
 
 // Response 200
@@ -122,14 +204,23 @@ Create a new account.
 }
 ```
 
-#### POST `/v1/auth/login`
-Authenticate with email and password.
+| Status | Error |
+|---|---|
+| `409` | Email already exists |
+| `403` | Turnstile verification failed |
+| `400` | Validation error |
+
+</details>
+
+<details>
+<summary><strong>POST /v1/auth/login</strong></summary>
+
 ```json
 // Request
 {
   "email": "user@example.com",
   "password": "securePassword123",
-  "turnstileToken": "optional-unless-3-failed-attempts"
+  "turnstileToken": "optional"
 }
 
 // Response 200 (no MFA)
@@ -146,8 +237,13 @@ Authenticate with email and password.
 }
 ```
 
-#### POST `/v1/auth/refresh`
-Rotate refresh token. Uses reuse detection — if a revoked token is presented, the entire token family is revoked (theft signal).
+When `mfaRequired` is `true`, call `/v1/auth/mfa/verify` with the `mfaToken` as the Bearer token.
+
+</details>
+
+<details>
+<summary><strong>POST /v1/auth/refresh</strong></summary>
+
 ```json
 // Request
 { "refreshToken": "a3f2c9d8..." }
@@ -159,42 +255,13 @@ Rotate refresh token. Uses reuse detection — if a revoked token is presented, 
 }
 ```
 
-#### POST `/v1/auth/logout`
-Revoke a refresh token.
-```json
-// Request
-{ "refreshToken": "a3f2c9d8..." }
+Uses **reuse detection** — presenting a revoked token revokes the entire token family.
 
-// Response 200
-{ "message": "Logged out successfully" }
-```
+</details>
 
-### Password Reset
+<details>
+<summary><strong>POST /v1/auth/mfa/enroll</strong> — Requires Bearer token</summary>
 
-#### POST `/v1/auth/forgot-password`
-Always returns a generic success message (prevents email enumeration).
-```json
-// Request
-{ "email": "user@example.com" }
-
-// Response 200 (always)
-{ "message": "If an account with that email exists, a password reset link has been sent." }
-```
-
-#### POST `/v1/auth/reset-password`
-Reset password using the token from the email link.
-```json
-// Request
-{ "token": "raw-256-bit-token", "newPassword": "newSecurePassword" }
-
-// Response 200
-{ "message": "Password reset successfully" }
-```
-
-### MFA (TOTP)
-
-#### POST `/v1/auth/mfa/enroll`
-Generate a TOTP secret. Requires Bearer access token.
 ```json
 // Response 200
 {
@@ -204,36 +271,28 @@ Generate a TOTP secret. Requires Bearer access token.
 }
 ```
 
-#### POST `/v1/auth/mfa/verify`
-Verify TOTP code. Dual purpose:
-- **Enrollment confirmation** (Bearer access token): confirms MFA setup
-- **Login verification** (MFA token from login): issues full tokens
+</details>
+
+<details>
+<summary><strong>POST /v1/auth/mfa/verify</strong></summary>
+
+Dual purpose depending on the token type in the `Authorization` header:
+
+| Token Type | Result |
+|---|---|
+| Regular access token (after `/mfa/enroll`) | `{ "message": "MFA enabled successfully" }` |
+| MFA token (from login) | `{ "accessToken": "...", "refreshToken": "..." }` |
 
 ```json
 // Request
 { "code": "123456" }
-
-// Response 200 (enrollment)
-{ "message": "MFA enabled successfully" }
-
-// Response 200 (login verification)
-{ "accessToken": "eyJhbGci...", "refreshToken": "b4e5f6..." }
 ```
 
-### OAuth 2.1
+</details>
 
-#### GET `/v1/auth/oauth/google`
-Redirects to Google with PKCE challenge. After user consents, callback handles token exchange.
+<details>
+<summary><strong>GET /v1/auth/me</strong> — Requires Bearer token</summary>
 
-#### GET `/v1/auth/oauth/github`
-Redirects to GitHub with state parameter. After user authorizes, callback handles token exchange.
-
-Both callbacks redirect to `{APP_BASE_URL}/auth/callback#access_token=...&refresh_token=...`
-
-### User Info
-
-#### GET `/v1/auth/me`
-Returns current user info. Requires Bearer access token.
 ```json
 // Response 200
 {
@@ -244,49 +303,85 @@ Returns current user info. Requires Bearer access token.
 }
 ```
 
-### JWKS
+</details>
 
-#### GET `/v1/auth/.well-known/jwks.json`
-Returns the public key in JWKS format for local JWT verification.
+<details>
+<summary><strong>API Key Management</strong> — Requires Bearer token</summary>
+
+**POST /v1/auth/keys** — Generate (max 3 per account):
 ```json
+// Request
+{ "name": "My App", "allowedOrigins": ["https://myapp.com"] }
+
+// Response 201
 {
-  "keys": [{
-    "kty": "RSA",
-    "n": "...",
-    "e": "AQAB",
-    "alg": "RS256",
-    "use": "sig",
-    "kid": "amygdala-key-1"
-  }]
+  "apiKey": "shown-once-only",
+  "key": { "id": "uuid", "name": "My App", "allowed_origins": [...], "created_at": "..." },
+  "message": "API Key generated successfully. Save this key now; it will not be displayed again."
 }
 ```
 
+**GET /v1/auth/keys** — List all keys.
+
+**DELETE /v1/auth/keys/:id** — Delete a key.
+
+</details>
+
 ---
 
-## Integration Guide for Third-Party Developers
+## Integration Guide
 
-### Step 1: Register Your Application
-Ask the Amygdala admin to run:
-```bash
-npm run create-client -- --name "Your App" --origins "https://yourapp.com"
+### For Frontend Developers
+
+**Step 1 — Add your API key to every request:**
+```javascript
+const API_URL = 'https://amygdala-api-37nt.onrender.com';
+const API_KEY = 'your-api-key';
+
+const res = await fetch(`${API_URL}/v1/auth/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': API_KEY,
+  },
+  body: JSON.stringify({ email, password }),
+});
 ```
-You'll receive a one-time API key.
 
-### Step 2: Add API Key to All Requests
-```http
-x-api-key: your-api-key-here
-Content-Type: application/json
+**Step 2 — Store tokens:**
+```javascript
+const { accessToken, refreshToken } = await res.json();
+// accessToken → sessionStorage or memory (15-min expiry)
+// refreshToken → localStorage or secure cookie (30-day expiry)
 ```
 
-### Step 3: Verify JWTs Locally (Recommended)
-Fetch the JWKS from `/v1/auth/.well-known/jwks.json` and verify tokens locally in your backend:
+**Step 3 — Call protected endpoints:**
+```javascript
+const me = await fetch(`${API_URL}/v1/auth/me`, {
+  headers: {
+    'Authorization': `Bearer ${accessToken}`,
+    'x-api-key': API_KEY,
+  },
+});
+```
+
+**Step 4 — Auto-refresh on 401:**
+```javascript
+// When you get a 401, call /v1/auth/refresh with the stored refreshToken
+// Replace both tokens with the new pair
+```
+
+### For Backend Developers — Verify JWTs Locally
+
+Fetch the JWKS and verify tokens without calling the API:
 
 ```javascript
-// Node.js example using jsonwebtoken + jwks-rsa
 const jwksClient = require('jwks-rsa');
 const jwt = require('jsonwebtoken');
 
-const client = jwksClient({ jwksUri: 'https://your-amygdala.onrender.com/v1/auth/.well-known/jwks.json' });
+const client = jwksClient({
+  jwksUri: 'https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json'
+});
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
@@ -301,29 +396,21 @@ jwt.verify(token, getKey, { algorithms: ['RS256'], issuer: 'amygdala' }, (err, d
 });
 ```
 
-### Alternative: Call `/v1/auth/me`
-If you don't want to verify JWTs locally, call the `/v1/auth/me` endpoint with the access token:
-```http
-GET /v1/auth/me
-Authorization: Bearer <access-token>
-x-api-key: <your-api-key>
-```
-
 ---
 
-## Security Features
+## Security
 
 | Feature | Implementation |
-|---------|---------------|
-| Password hashing | Argon2id (memory=64MB, time=3, parallelism=4) |
-| JWT signing | RS256 with 2048-bit RSA keypair |
+|---|---|
+| Password hashing | Argon2id (64 MB memory, time cost 3, parallelism 4) |
+| JWT signing | RS256 with 2048-bit RSA |
 | Access tokens | 15-minute expiry |
 | Refresh tokens | 30-day expiry, SHA-256 hashed storage |
 | Token rotation | Family-based reuse detection (revokes all on reuse) |
-| OAuth | Authorization Code + PKCE (S256) |
-| MFA | TOTP (RFC 6238) with QR code enrollment |
+| OAuth | Authorization Code + PKCE (S256) for Google |
+| MFA | TOTP (RFC 6238) with QR enrollment |
 | Bot protection | Cloudflare Turnstile (always on signup, conditional on login) |
-| Rate limiting | Redis-backed sliding window (100 req/15min default) |
+| Rate limiting | Redis-backed sliding window (100 req / 15 min) |
 | Input validation | Zod schemas on every request body |
 | Security headers | helmet.js (CSP, HSTS, X-Frame-Options, etc.) |
 | API key auth | SHA-256 hashed, per-client CORS origins |
@@ -331,26 +418,24 @@ x-api-key: <your-api-key>
 
 ---
 
-## Render Deployment
+## Deployment
 
-### Option A: Docker (Recommended)
-1. Go to [render.com](https://render.com) → **New** → **Web Service**
-2. Connect your GitHub repo: `YaswanthKumarMallela01/Amygdala-api`
-3. Settings:
-   - **Environment**: Docker
-   - **Docker Build Context**: `.`
+### Render (Docker — Recommended)
+
+1. Create a **Web Service** on [render.com](https://render.com)
+2. Connect repo: `YaswanthKumarMallela01/Amygdala-api`
+3. Set **Environment** to Docker, **Build Context** to `.`
 4. Add all env vars in the **Environment** tab
 5. Deploy
 
-### Option B: Node.js
-1. Same as above, but select **Node** environment
-2. **Build Command**: `npm ci && npm run build`
-3. **Start Command**: `npm run migrate && npm start`
+### Render (Node.js)
+
+- **Build Command:** `npm ci && npm run build`
+- **Start Command:** `npm run migrate && npm start`
 
 ### Post-Deploy
-After deploying, run the migration and create your first API client:
+
 ```bash
-# Using Render Shell or locally with DATABASE_URL pointing to production
 npm run migrate
 npm run create-client -- --name "Production App" --origins "https://yourapp.com"
 ```
@@ -362,29 +447,64 @@ npm run create-client -- --name "Production App" --origins "https://yourapp.com"
 ```
 amygdala/
 ├── src/
-│   ├── index.ts              # Entry point
-│   ├── app.ts                # Express app setup
-│   ├── config/env.ts         # Zod-validated env vars
+│   ├── index.ts                    # Entry point — starts server
+│   ├── app.ts                      # Express app, middleware, routes
+│   ├── config/
+│   │   └── env.ts                  # Zod-validated environment config
 │   ├── db/
-│   │   ├── client.ts         # PostgreSQL pool
-│   │   ├── migrate.ts        # Migration runner
-│   │   └── migrations/001_initial.sql
+│   │   ├── client.ts               # PostgreSQL connection pool
+│   │   ├── migrate.ts              # Migration runner
+│   │   └── migrations/
+│   │       ├── 001_initial.sql     # Core schema
+│   │       └── 002_add_user_id_to_api_clients.sql
 │   ├── middleware/
-│   │   ├── api-key.ts        # x-api-key + per-client CORS
-│   │   ├── auth.ts           # Bearer token verification
-│   │   ├── rate-limit.ts     # Redis-backed rate limiting
-│   │   ├── turnstile.ts      # Cloudflare Turnstile
-│   │   └── validate.ts       # Zod request validation
-│   ├── routes/v1/auth/       # All 14 endpoints
-│   ├── services/             # Business logic
-│   ├── types/index.ts        # TypeScript interfaces
-│   └── utils/                # Crypto, logging helpers
-├── scripts/create-api-client.ts
-├── Dockerfile
+│   │   ├── api-key.ts              # x-api-key validation + per-client CORS
+│   │   ├── auth.ts                 # Bearer JWT verification
+│   │   ├── rate-limit.ts           # Redis-backed rate limiting
+│   │   ├── turnstile.ts            # Cloudflare Turnstile verification
+│   │   └── validate.ts             # Zod request body validation
+│   ├── routes/v1/auth/
+│   │   ├── index.ts                # Route registration
+│   │   ├── signup.ts               # POST /signup
+│   │   ├── login.ts                # POST /login
+│   │   ├── refresh.ts              # POST /refresh
+│   │   ├── logout.ts               # POST /logout
+│   │   ├── forgot-password.ts      # POST /forgot-password
+│   │   ├── reset-password.ts       # POST /reset-password
+│   │   ├── me.ts                   # GET /me
+│   │   ├── keys.ts                 # GET/POST/DELETE /keys
+│   │   ├── jwks.ts                 # GET /.well-known/jwks.json
+│   │   ├── mfa/
+│   │   │   ├── enroll.ts           # POST /mfa/enroll
+│   │   │   └── verify.ts          # POST /mfa/verify
+│   │   └── oauth/
+│   │       ├── google.ts           # Google OAuth + PKCE
+│   │       └── github.ts           # GitHub OAuth
+│   ├── services/
+│   │   ├── jwt.service.ts          # Sign/verify JWTs, JWKS export
+│   │   ├── token.service.ts        # Refresh token create/rotate/revoke
+│   │   ├── password.service.ts     # Argon2id hash/verify
+│   │   ├── email.service.ts        # Resend email templates
+│   │   ├── redis.service.ts        # Redis client + login attempt tracking
+│   │   ├── turnstile.service.ts    # Turnstile token verification
+│   │   └── oauth/
+│   │       ├── google.service.ts   # Google token exchange
+│   │       └── github.service.ts   # GitHub token exchange
+│   ├── types/index.ts              # TypeScript interfaces
+│   └── utils/
+│       ├── crypto.ts               # Token generation, hashing, PKCE
+│       └── logger.ts               # Pino logger config
+├── scripts/
+│   └── create-api-client.ts        # CLI to create API clients
+├── test-client.html                # Built-in auth test dashboard
+├── Dockerfile                      # Multi-stage Docker build
 ├── package.json
 └── tsconfig.json
 ```
 
+---
+
 ## License
 
 MIT
+
