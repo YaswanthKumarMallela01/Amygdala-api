@@ -13,8 +13,9 @@ Cloudflare Turnstile bot protection, and Redis-backed rate limiting.
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)](https://supabase.com/)
 [![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D?logo=redis&logoColor=white)](https://upstash.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-YaswanthKumarMallela01%2FAmygdala--api-181717?logo=github&logoColor=white)](https://github.com/YaswanthKumarMallela01/Amygdala-api)
 
-[Live API](https://amygdala-api-37nt.onrender.com) · [Test Dashboard](https://amygdala-api-37nt.onrender.com/test) · [JWKS](https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json)
+[Live API](https://amygdala-api-37nt.onrender.com) · [Test Dashboard](https://amygdala-api-37nt.onrender.com/test) · [JWKS](https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json) · [GitHub Repo](https://github.com/YaswanthKumarMallela01/Amygdala-api)
 
 </div>
 
