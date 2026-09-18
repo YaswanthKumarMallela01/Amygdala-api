@@ -12,11 +12,12 @@ const router = Router();
 const bodySchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
+  name: z.string().optional(),
   turnstileToken: z.string(),
 });
 
 router.post('/', validate(bodySchema), turnstileRequired(), async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
   
   try {
     const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
@@ -27,8 +28,8 @@ router.post('/', validate(bodySchema), turnstileRequired(), async (req, res) => 
     const hashedPassword = await hashPassword(password);
     
     const result = await query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
-      [email, hashedPassword]
+      'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name',
+      [email, hashedPassword, name || null]
     );
     const user = result.rows[0];
     
@@ -36,9 +37,9 @@ router.post('/', validate(bodySchema), turnstileRequired(), async (req, res) => 
     
     const deviceInfo = req.header('user-agent');
     const { rawToken: refreshToken } = await createRefreshToken(user.id, deviceInfo);
-    const accessToken = signAccessToken({ sub: user.id, email: user.email });
+    const accessToken = signAccessToken({ sub: user.id, email: user.email, name: user.name || undefined });
     
-    res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email } });
+    res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name || null } });
   } catch (err) {
     logger.error({ err }, 'Signup error');
     res.status(500).json({ error: 'Internal server error' });

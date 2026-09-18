@@ -53,22 +53,35 @@ router.get('/callback', async (req, res) => {
       ['github', providerUserId]
     );
     
+    let userName = profile.name || profile.login || '';
+    
     if (existingIdentity.length > 0) {
       userId = existingIdentity[0].user_id;
+      if (profile.name) {
+        await query('UPDATE users SET name = COALESCE(name, $1) WHERE id = $2', [profile.name, userId]);
+      }
+      const uRes = await query('SELECT name FROM users WHERE id = $1', [userId]);
+      if (uRes.rows[0]?.name) userName = uRes.rows[0].name;
     } else {
       const { rows: existingUser } = await query(
-        'SELECT id FROM users WHERE email = $1',
+        'SELECT id, name FROM users WHERE email = $1',
         [profile.email]
       );
       
       if (existingUser.length > 0) {
         userId = existingUser[0].id;
+        if (profile.name && !existingUser[0].name) {
+          await query('UPDATE users SET name = $1 WHERE id = $2', [profile.name, userId]);
+        } else if (existingUser[0].name) {
+          userName = existingUser[0].name;
+        }
       } else {
         const { rows: newUser } = await query(
-          'INSERT INTO users (email, email_verified) VALUES ($1, true) RETURNING id',
-          [profile.email]
+          'INSERT INTO users (email, name, email_verified) VALUES ($1, $2, true) RETURNING id, name',
+          [profile.email, profile.name || profile.login || null]
         );
         userId = newUser[0].id;
+        if (newUser[0].name) userName = newUser[0].name;
       }
       
       await query(
@@ -77,7 +90,7 @@ router.get('/callback', async (req, res) => {
       );
     }
     
-    const accessToken = signAccessToken({ sub: userId, email: profile.email, mfa_verified: true });
+    const accessToken = signAccessToken({ sub: userId, email: profile.email, name: userName, mfa_verified: true });
     const { rawToken } = await createRefreshToken(userId);
     
     res.redirect(`${env.APP_BASE_URL}/auth/callback#access_token=${accessToken}&refresh_token=${rawToken}`);

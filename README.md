@@ -155,21 +155,24 @@ Copy `.env.example` → `.env` and fill in every value. All variables are **requ
 |---|---|---|---|
 | `POST` | `/v1/auth/mfa/enroll` | API Key + Bearer | Generate TOTP secret & QR code |
 | `POST` | `/v1/auth/mfa/verify` | API Key + Bearer | Confirm enrollment OR complete MFA login |
+| `DELETE` | `/v1/auth/mfa/enroll` | API Key + Bearer | Disable TOTP two-factor authentication |
 
 ### OAuth 2.1
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/v1/auth/oauth/google` | API Key | Redirect to Google (PKCE) |
-| `GET` | `/v1/auth/oauth/github` | API Key | Redirect to GitHub |
+| `GET` | `/v1/auth/oauth/google` | API Key | Redirect to Google (PKCE, extracts name & email) |
+| `GET` | `/v1/auth/oauth/github` | API Key | Redirect to GitHub (extracts name & email) |
 | `GET` | `/v1/auth/oauth/google/callback` | — | Google callback (public) |
 | `GET` | `/v1/auth/oauth/github/callback` | — | GitHub callback (public) |
 
-### User & Keys
+### User Profile & Keys
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/v1/auth/me` | API Key + Bearer | Get current user profile |
+| `GET` | `/v1/auth/me` | API Key + Bearer | Get user profile (id, email, name, email_verified, mfa_enabled) |
+| `PATCH` | `/v1/auth/me` | API Key + Bearer | Update user display name (`{ name }`) |
+| `DELETE` | `/v1/auth/me` | API Key + Bearer | Permanently delete account & revoke all sessions |
 | `GET` | `/v1/auth/keys` | API Key + Bearer | List your API keys |
 | `POST` | `/v1/auth/keys` | API Key + Bearer | Generate new API key (max 3) |
 | `DELETE` | `/v1/auth/keys/:id` | API Key + Bearer | Delete an API key |
@@ -291,16 +294,34 @@ Dual purpose depending on the token type in the `Authorization` header:
 </details>
 
 <details>
-<summary><strong>GET /v1/auth/me</strong> — Requires Bearer token</summary>
+<summary><strong>User Profile: GET / PATCH / DELETE /v1/auth/me</strong> — Requires Bearer token</summary>
 
+**GET /v1/auth/me** — Returns current user profile:
 ```json
 // Response 200
 {
   "id": "uuid",
   "email": "user@example.com",
+  "name": "Yaswanth Kumar",
   "email_verified": true,
+  "mfa_enabled": true,
   "created_at": "2025-01-01T00:00:00Z"
 }
+```
+
+**PATCH /v1/auth/me** — Update display name:
+```json
+// Request
+{ "name": "New Display Name" }
+
+// Response 200
+{ "message": "Profile updated successfully", "name": "New Display Name" }
+```
+
+**DELETE /v1/auth/me** — Permanently delete user account:
+```json
+// Response 200
+{ "message": "Account permanently deleted" }
 ```
 
 </details>

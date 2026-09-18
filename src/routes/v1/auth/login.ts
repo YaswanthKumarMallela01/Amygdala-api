@@ -23,7 +23,7 @@ router.post('/', validate(bodySchema), turnstileConditional(), async (req, res) 
   const ip = req.ip || req.connection?.remoteAddress || 'unknown';
   
   try {
-    const result = await query('SELECT id, email, password_hash, mfa_secret FROM users WHERE email = $1', [email]);
+    const result = await query('SELECT id, email, name, password_hash, mfa_secret FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     
     if (!user || !user.password_hash) {
@@ -48,9 +48,9 @@ router.post('/', validate(bodySchema), turnstileConditional(), async (req, res) 
     
     const deviceInfo = req.header('user-agent');
     const { rawToken: refreshToken } = await createRefreshToken(user.id, deviceInfo);
-    const accessToken = signAccessToken({ sub: user.id, email: user.email, mfa_verified: true });
+    const accessToken = signAccessToken({ sub: user.id, email: user.email, name: user.name || undefined, mfa_verified: true });
     
-    res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email } });
+    res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name || null } });
   } catch (err) {
     logger.error({ err }, 'Login error');
     res.status(500).json({ error: 'Internal server error' });

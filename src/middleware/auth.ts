@@ -15,6 +15,7 @@ export const authMiddleware: RequestHandler = (req: Request, res: Response, next
     req.user = {
       sub: decoded.sub,
       email: decoded.email,
+      name: decoded.name,
       mfa_verified: decoded.mfa_verified,
     };
     next();

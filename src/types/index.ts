@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  name: string | null;
   password_hash: string | null;
   email_verified: boolean;
   mfa_secret: string | null;
@@ -57,7 +58,7 @@ declare global {
   namespace Express {
     interface Request {
       apiClient?: ApiClient;
-      user?: { sub: string; email: string; mfa_verified?: boolean };
+      user?: { sub: string; email: string; name?: string; mfa_verified?: boolean };
     }
   }
 }

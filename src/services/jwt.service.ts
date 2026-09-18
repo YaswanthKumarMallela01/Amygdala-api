@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { env } from '../config/env';
 
-export function signAccessToken(payload: { sub: string; email: string; mfa_verified?: boolean }): string {
+export function signAccessToken(payload: { sub: string; email: string; name?: string; mfa_verified?: boolean }): string {
   return jwt.sign(payload, env.JWT_PRIVATE_KEY, {
     algorithm: 'RS256',
     expiresIn: '15m',
@@ -10,11 +10,11 @@ export function signAccessToken(payload: { sub: string; email: string; mfa_verif
   });
 }
 
-export function verifyAccessToken(token: string): { sub: string; email: string; mfa_verified?: boolean; iat: number; exp: number } {
+export function verifyAccessToken(token: string): { sub: string; email: string; name?: string; mfa_verified?: boolean; iat: number; exp: number } {
   return jwt.verify(token, env.JWT_PUBLIC_KEY, {
     algorithms: ['RS256'],
     issuer: 'amygdala'
-  }) as { sub: string; email: string; mfa_verified?: boolean; iat: number; exp: number };
+  }) as { sub: string; email: string; name?: string; mfa_verified?: boolean; iat: number; exp: number };
 }
 
 export function getJWKS(): { keys: any[] } {

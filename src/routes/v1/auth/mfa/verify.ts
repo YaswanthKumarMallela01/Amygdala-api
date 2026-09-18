@@ -38,7 +38,7 @@ router.post('/', validate(bodySchema), async (req, res) => {
     
     const userId = decoded.sub;
     
-    const { rows } = await query('SELECT mfa_secret, email FROM users WHERE id = $1', [userId]);
+    const { rows } = await query('SELECT mfa_secret, email, name FROM users WHERE id = $1', [userId]);
     if (rows.length === 0 || !rows[0].mfa_secret) {
       return res.status(400).json({ error: 'MFA not pending or enabled for this user' });
     }
@@ -55,7 +55,7 @@ router.post('/', validate(bodySchema), async (req, res) => {
     }
     
     if (isMfaLogin) {
-      const accessToken = signAccessToken({ sub: userId, email: user.email, mfa_verified: true });
+      const accessToken = signAccessToken({ sub: userId, email: user.email, name: user.name || undefined, mfa_verified: true });
       const { rawToken } = await createRefreshToken(userId);
       return res.json({ accessToken, refreshToken: rawToken });
     }

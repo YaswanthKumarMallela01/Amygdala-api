@@ -30,4 +30,22 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/', authMiddleware, async (req, res) => {
+  try {
+    if (!req.user || !req.user.sub) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    await query(
+      'UPDATE users SET mfa_secret = NULL, updated_at = now() WHERE id = $1',
+      [req.user.sub]
+    );
+
+    res.json({ message: 'MFA disabled successfully' });
+  } catch (err) {
+    logger.error({ err }, 'MFA disable error');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

@@ -11,7 +11,7 @@ export function buildGitHubAuthURL(state: string): string {
   return `https://github.com/login/oauth/authorize?${params.toString()}`;
 }
 
-export async function exchangeGitHubCode(code: string): Promise<{ id: string; email: string; login: string }> {
+export async function exchangeGitHubCode(code: string): Promise<{ id: string; email: string; login: string; name: string }> {
   try {
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -72,7 +72,8 @@ export async function exchangeGitHubCode(code: string): Promise<{ id: string; em
     return {
       id: userData.id.toString(),
       email: primaryEmail,
-      login: userData.login
+      login: userData.login,
+      name: userData.name || userData.login || ''
     };
   } catch (error) {
     logger.error({ err: error }, 'GitHub OAuth exchange error');

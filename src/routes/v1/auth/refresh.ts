@@ -16,13 +16,13 @@ router.post('/', validate(bodySchema), async (req, res) => {
     const { refreshToken } = req.body;
     const { rawToken: newRawToken, userId } = await rotateRefreshToken(refreshToken);
     
-    const result = await query('SELECT email FROM users WHERE id = $1', [userId]);
+    const result = await query('SELECT email, name FROM users WHERE id = $1', [userId]);
     if (result.rows.length === 0) {
         return res.status(401).json({ error: 'Invalid refresh token' });
     }
-    const email = result.rows[0].email;
+    const { email, name } = result.rows[0];
     
-    const accessToken = signAccessToken({ sub: userId, email });
+    const accessToken = signAccessToken({ sub: userId, email, name: name || undefined });
     
     res.json({ accessToken, refreshToken: newRawToken });
   } catch (err: any) {
