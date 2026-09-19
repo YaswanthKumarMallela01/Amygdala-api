@@ -27,7 +27,7 @@ Best regards,
 The Amygdala Security Team
 https://amygdala-api-37nt.onrender.com`;
 
-  // Clean, responsive, anti-spam HTML template
+  // Clean, responsive, anti-spam HTML template with preheader
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,6 +36,11 @@ https://amygdala-api-37nt.onrender.com`;
   <title>Reset Your Password</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e2e8f0;">
+  <!-- Preheader text to prevent email preview clipping and spam detection -->
+  <div style="display: none; font-size: 1px; color: #0b0f19; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    Reset your password for Amygdala Authentication. This single-use link expires in 30 minutes.
+  </div>
+
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b0f19; padding: 40px 16px;">
     <tr>
       <td align="center">
@@ -102,24 +107,34 @@ https://amygdala-api-37nt.onrender.com`;
 </body>
 </html>`;
 
-  // 1. Send via verified Gmail SMTP
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const smtpUser = env.SMTP_USER || process.env.SMTP_USER;
+  const smtpPass = env.SMTP_PASS || process.env.SMTP_PASS;
+
+  // 1. Send via verified Gmail SMTP (Highest deliverability, directly passes SPF & DKIM)
+  if (smtpUser && smtpPass) {
     try {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
+          user: smtpUser,
+          pass: smtpPass
         }
       });
 
       await transporter.sendMail({
-        from: `"Amygdala Security" <${process.env.SMTP_USER}>`,
-        replyTo: process.env.SMTP_USER,
+        from: `"Amygdala Security" <${smtpUser}>`,
+        replyTo: smtpUser,
         to: email,
-        subject: 'Amygdala password reset request',
+        subject: 'Reset your Amygdala password',
         text,
-        html
+        html,
+        headers: {
+          'X-Priority': '1',
+          'X-MSMail-Priority': 'High',
+          'Importance': 'High',
+          'Auto-Submitted': 'auto-generated',
+          'X-Auto-Response-Suppress': 'All'
+        }
       });
 
       logger.info({ email }, 'Password reset email delivered via Gmail SMTP');
@@ -131,13 +146,16 @@ https://amygdala-api-37nt.onrender.com`;
 
   // 2. Resend API fallback
   try {
-    const fromAddress = process.env.EMAIL_FROM || 'Amygdala <onboarding@resend.dev>';
+    const fromAddress = env.EMAIL_FROM || process.env.EMAIL_FROM || (smtpUser ? `"Amygdala Security" <${smtpUser}>` : 'Amygdala <onboarding@resend.dev>');
     const result = await resend.emails.send({
       from: fromAddress,
       to: email,
-      subject: 'Amygdala password reset request',
+      subject: 'Reset your Amygdala password',
       text,
-      html
+      html,
+      headers: {
+        'Auto-Submitted': 'auto-generated'
+      }
     });
 
     if (result.error) {

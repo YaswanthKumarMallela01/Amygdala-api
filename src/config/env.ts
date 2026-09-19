@@ -18,6 +18,9 @@ const envSchema = z.object({
   REDIS_URL: z.string(),
   APP_BASE_URL: z.string().url(),
   PORT: z.coerce.number().default(3000),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

@@ -120,6 +120,9 @@ Copy `.env.example` → `.env` and fill in every value. All variables are **requ
 | `TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key |
 | `RESEND_API_KEY` | Resend email API key |
+| `SMTP_USER` | Gmail address for high-deliverability SMTP (avoids spam) |
+| `SMTP_PASS` | Gmail App Password (16 characters) |
+| `EMAIL_FROM` | Sender address (e.g. `Amygdala Security <your_email@gmail.com>`) |
 | `JWT_PRIVATE_KEY` | RS256 private key (PEM, use `\\n` for newlines) |
 | `JWT_PUBLIC_KEY` | RS256 public key (PEM) |
 | `REDIS_URL` | Upstash Redis connection string |
