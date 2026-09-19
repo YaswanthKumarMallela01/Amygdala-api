@@ -1559,19 +1559,382 @@
     }
     .btn-delete-key:hover { background: rgba(239, 68, 68, 0.2); }
 
-    @media (max-width: 1100px) {
-      .stat-cards-grid { grid-template-columns: repeat(2, 1fr); }
-      .dashboard-two-col { grid-template-columns: 1fr; }
-      .bottom-3-cards-grid { grid-template-columns: 1fr; }
+
+    /* ==========================================================================
+       MOBILE RESPONSIVE NAVIGATION & LAYOUT
+       ========================================================================== */
+    .mobile-menu-toggle {
+      display: none;
+      background: #080c14;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .mobile-menu-toggle:hover {
+      background: #0d121f;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Slide-out Mobile Drawer */
+    .mobile-drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 120;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .mobile-drawer-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 290px;
+      max-width: 85vw;
+      background: #030509;
+      border-right: 1px solid var(--card-border);
+      z-index: 130;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 10px 0 40px rgba(0, 0, 0, 0.95);
+      overflow-y: auto;
+    }
+    .mobile-drawer.active {
+      transform: translateX(0);
+    }
+
+    .mobile-drawer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-drawer-close {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: #94a3b8;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .btn-drawer-close:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .mobile-drawer-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #080c14;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .mobile-drawer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .mobile-drawer-bottom {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Fixed Mobile Bottom Navigation Bar */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(4, 7, 14, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 90;
+      padding: 0 8px;
+      align-items: center;
+      justify-content: space-around;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.85);
+    }
+    .mobile-bottom-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 0;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .mobile-bottom-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      transition: transform 0.15s ease;
+    }
+    .mobile-bottom-item.active {
+      color: #818cf8;
+    }
+    .mobile-bottom-item.active svg {
+      transform: translateY(-1px);
+      stroke: #818cf8;
+    }
+
+    /* Comprehensive Mobile Media Queries */
+    @media (max-width: 900px) {
+      .stat-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .dashboard-two-col { grid-template-columns: 1fr !important; }
+      .bottom-3-cards-grid { grid-template-columns: 1fr !important; }
       .profile-right-metrics { gap: 16px; flex-wrap: wrap; }
-      .quickstart-steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .quickstart-steps-grid { grid-template-columns: repeat(2, 1fr) !important; }
     }
+
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-wrapper { margin-left: 0; }
-      .stat-cards-grid { grid-template-columns: 1fr; }
-      .profile-banner-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .sidebar { display: none !important; }
+      .main-wrapper { margin-left: 0 !important; }
+      .mobile-menu-toggle { display: flex !important; }
+      .mobile-bottom-nav { display: flex !important; }
+
+      /* Topbar Mobile Cleanup */
+      .topbar {
+        height: 58px !important;
+        padding: 0 14px !important;
+        gap: 10px !important;
+      }
+      .search-box {
+        flex: 1 !important;
+        width: auto !important;
+        min-width: 110px !important;
+        max-width: 220px !important;
+        padding: 6px 10px !important;
+      }
+      .search-kbd { display: none !important; }
+      .topbar-right { gap: 8px !important; }
+
+      /* Hide long domain in cloud badge on mobile */
+      .cloud-badge-domain { display: none !important; }
+      .cloud-badge {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+      }
+
+      /* Content Area Padding */
+      .content-body {
+        padding: 14px 12px 86px 12px !important;
+      }
+
+      /* Welcome Banner */
+      .welcome-header-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 4px 0 !important;
+      }
+      .welcome-header-card h1 {
+        font-size: 22px !important;
+      }
+      .welcome-header-card p {
+        font-size: 12.5px !important;
+      }
+      .welcome-quote-wrap {
+        text-align: left !important;
+        border-left: 2px solid rgba(99, 102, 241, 0.5);
+        padding-left: 10px;
+      }
+
+      /* Profile Banner Card */
+      .profile-banner-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 18px 16px !important;
+        gap: 18px !important;
+      }
+      .profile-left {
+        width: 100% !important;
+        gap: 14px !important;
+      }
+      .profile-avatar-round {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 20px !important;
+      }
+      .profile-name-text {
+        font-size: 17px !important;
+      }
+      .profile-uid-row {
+        font-size: 11px !important;
+        word-break: break-all !important;
+      }
+      .profile-right-metrics {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+      .profile-metrics-subrow {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding-bottom: 4px;
+      }
+      .btn-create-key-primary {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+
+      /* Stat Cards 2-col on mobile for compact, clean look */
+      .stat-cards-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+      }
+      .stat-card-box {
+        padding: 14px !important;
+        min-height: 90px !important;
+      }
+      .stat-circle-icon {
+        width: 36px !important;
+        height: 36px !important;
+      }
+      .stat-circle-icon svg {
+        width: 17px !important;
+        height: 17px !important;
+      }
+      .stat-big-val {
+        font-size: 16px !important;
+      }
+      .stat-sub-label {
+        font-size: 11px !important;
+      }
+
+      /* Project Card */
+      .project-card-box {
+        padding: 16px !important;
+      }
+      .project-meta-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+      }
+      .project-id-row {
+        font-size: 11px !important;
+        word-break: break-all !important;
+      }
+
+      /* Quick Auth Code Panel */
+      .quick-code-panel {
+        padding: 16px !important;
+      }
+      .code-tabs-bar {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 4px !important;
+      }
+      .code-box-container {
+        font-size: 11px !important;
+        padding: 12px 10px !important;
+      }
+
+      /* Documentation View */
+      .docs-subnav {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 8px !important;
+      }
+      .docs-subtab {
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+      }
+      .docs-hero-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 20px 16px !important;
+        gap: 16px !important;
+      }
+      .quickstart-steps-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Modals */
+      .modal-card {
+        padding: 20px 16px !important;
+        margin: 10px !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+      }
+
+      /* Sign In / Sign Up Centerpiece */
+      .auth-view-wrapper {
+        padding: 20px 12px !important;
+      }
+      .login-container {
+        padding: 26px 18px !important;
+        border-radius: 18px !important;
+      }
+
+      /* App Footer */
+      .app-footer {
+        padding: 16px 14px 20px 14px !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        text-align: center !important;
+      }
+      .app-footer a {
+        margin: 0 8px !important;
+      }
     }
+
+    @media (max-width: 480px) {
+      .stat-cards-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1672,7 +2035,107 @@
        VIEW 2: FULL AUTHENTICATED APP LAYOUT (PITCH BLACK UI)
        ========================================================================== -->
   <div class="app-layout" id="appLayout">
-    
+  <!-- Mobile Slide-out Drawer Backdrop & Container -->
+  <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop" onclick="closeMobileDrawer()"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div>
+      <div class="mobile-drawer-top">
+        <div class="sidebar-brand" onclick="navigate('dash'); closeMobileDrawer();">
+          <img src="/fevicon.png" alt="Amygdala" class="brand-img">
+          <div class="brand-title-wrap">
+            <h2>Amygdala</h2>
+            <p>Auth for a better internet.</p>
+          </div>
+        </div>
+        <button class="btn-drawer-close" onclick="closeMobileDrawer()">&times;</button>
+      </div>
+
+      <div class="mobile-drawer-user" onclick="navigate('profile'); closeMobileDrawer();">
+        <div class="user-avatar-sm" id="drawerUserInitial">Y</div>
+        <div style="overflow: hidden;">
+          <div style="font-weight: 700; color: #fff; font-size: 14px;" id="drawerUserName">YASH</div>
+          <div style="font-size: 11px; color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" id="drawerUserEmail">user@example.com</div>
+        </div>
+      </div>
+
+      <nav class="mobile-drawer-nav">
+        <div class="nav-item active" id="drawer-menu-dash" onclick="navigate('dash'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-projects" onclick="navigate('projects'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <span>Projects</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-keys" onclick="navigate('keys'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+          <span>API Keys</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-docs" onclick="navigate('docs'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+          <span>Documentation</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-mfa" onclick="navigate('mfa'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Security &amp; MFA</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-tokens" onclick="navigate('tokens'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+          <span>Token Claims</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-profile" onclick="navigate('profile'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profile</span>
+        </div>
+        <div class="nav-item" id="drawer-menu-settings" onclick="navigate('settings'); closeMobileDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </div>
+      </nav>
+    </div>
+
+    <div class="mobile-drawer-bottom">
+      <button class="btn-logout-pill" style="width: 100%; justify-content: center;" onclick="signOut('Signed out successfully.'); closeMobileDrawer();">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Log Out</span>
+      </button>
+      <div class="sidebar-footer-row">
+        <span>v1.0.0</span>
+        <div class="system-status-indicator">
+          <span class="pulse-dot"></span>
+          <span>Operational</span>
+        </div>
+        <a href="https://github.com/YaswanthKumarMallela01/Amygdala-api" target="_blank" class="github-link-icon" title="View Source on GitHub">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Bottom Sticky Navigation Bar -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-bottom-item active" id="mob-nav-dash" onclick="navigate('dash')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="mobile-bottom-item" id="mob-nav-projects" onclick="navigate('projects')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      <span>Projects</span>
+    </button>
+    <button class="mobile-bottom-item" id="mob-nav-keys" onclick="navigate('keys')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/></svg>
+      <span>Keys</span>
+    </button>
+    <button class="mobile-bottom-item" id="mob-nav-docs" onclick="navigate('docs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/></svg>
+      <span>Docs</span>
+    </button>
+    <button class="mobile-bottom-item" id="mob-nav-profile" onclick="navigate('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+
     <!-- Left Glass Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-top">
@@ -1745,6 +2208,15 @@
       
       <!-- Top Bar -->
       <div class="topbar">
+        <!-- Mobile Menu Toggle (Hamburger) -->
+        <button class="mobile-menu-toggle" onclick="toggleMobileDrawer()" title="Open Navigation Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+
         <div class="search-box" onclick="focusSearch()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="text" id="searchInput" placeholder="Search docs, endpoints, keys..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Enter') executeFirstSearch()">
@@ -1754,7 +2226,7 @@
         <div class="topbar-right">
           <a href="https://amygdala-api-37nt.onrender.com" target="_blank" class="cloud-badge" title="Live API Root">
             <div class="cloud-dot"></div>
-            <span>Cloud (amygdala-api-37nt.onrender.com)</span>
+            <span>Cloud<span class="cloud-badge-domain"> (amygdala-api-37nt.onrender.com)</span></span>
             <span style="font-size: 11px; color: var(--text-dim);">&rarr;</span>
           </a>
 
@@ -1867,23 +2339,25 @@
             </div>
 
             <div class="profile-right-metrics">
-              <div class="profile-metric-col">
-                <div class="metric-icon-wrap">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <div class="profile-metrics-subrow">
+                <div class="profile-metric-col">
+                  <div class="metric-icon-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </div>
+                  <div>
+                    <div class="metric-sub">Member since</div>
+                    <div class="metric-val" id="profileMemberSince">Sep 18, 2026</div>
+                  </div>
                 </div>
-                <div>
-                  <div class="metric-sub">Member since</div>
-                  <div class="metric-val" id="profileMemberSince">Sep 18, 2026</div>
-                </div>
-              </div>
 
-              <div class="profile-metric-col">
-                <div class="metric-icon-wrap">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
-                </div>
-                <div>
-                  <div class="metric-sub">Plan</div>
-                  <div class="metric-val">Developer</div>
+                <div class="profile-metric-col">
+                  <div class="metric-icon-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+                  </div>
+                  <div>
+                    <div class="metric-sub">Plan</div>
+                    <div class="metric-val">Developer</div>
+                  </div>
                 </div>
               </div>
 
@@ -3262,6 +3736,12 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
       document.getElementById('profileNameInput').value = u.name || '';
       document.getElementById('dropdownUserName').innerText = displayName;
       document.getElementById('dropdownUserEmail').innerText = email;
+      const drawerName = document.getElementById('drawerUserName');
+      if (drawerName) drawerName.innerText = displayName;
+      const drawerEmail = document.getElementById('drawerUserEmail');
+      if (drawerEmail) drawerEmail.innerText = email;
+      const drawerInitial = document.getElementById('drawerUserInitial');
+      if (drawerInitial) drawerInitial.innerText = initial;
       document.getElementById('profileEmailInput').value = email;
 
       if (u.created_at) {
@@ -3331,11 +3811,19 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
       appLayout.style.display = 'none';
     }
 
-    // Section Navigation
+    // Section Navigation (Desktop + Mobile Bottom + Mobile Drawer)
     function navigate(viewName) {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.mobile-bottom-item').forEach(i => i.classList.remove('active'));
+
       const activeItem = document.getElementById('menu-' + viewName);
       if (activeItem) activeItem.classList.add('active');
+
+      const activeDrawerItem = document.getElementById('drawer-menu-' + viewName);
+      if (activeDrawerItem) activeDrawerItem.classList.add('active');
+
+      const activeMobItem = document.getElementById('mob-nav-' + viewName);
+      if (activeMobItem) activeMobItem.classList.add('active');
 
       const sections = ['dash', 'projects', 'keys', 'mfa', 'profile', 'settings', 'tokens', 'docs'];
       sections.forEach(s => {
@@ -3822,6 +4310,28 @@ export class AmygdalaClient {
     }
 
     
+    
+    function toggleMobileDrawer() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileDrawerBackdrop');
+      const isOpen = drawer.classList.contains('active');
+      if (isOpen) {
+        closeMobileDrawer();
+      } else {
+        drawer.classList.add('active');
+        backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeMobileDrawer() {
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('mobileDrawerBackdrop');
+      if (drawer) drawer.classList.remove('active');
+      if (backdrop) backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
     function toggleUserDropdown(e) {
       e.stopPropagation();
       const menu = document.getElementById('userDropdownMenu');
