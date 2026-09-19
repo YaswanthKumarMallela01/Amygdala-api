@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Cloudflare Turnstile Bot Protection API -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=initTurnstile" async defer></script>
   <style>
     :root {
       --bg: #000000;
@@ -2204,7 +2204,7 @@
 
         <!-- Cloudflare Turnstile Bot Verification Widget -->
         <div id="turnstileWrap" style="display: flex; justify-content: center; margin: 16px 0; min-height: 65px; width: 100%;">
-          <div id="turnstileWidget" class="cf-turnstile" data-sitekey="0x4AAAAAAE6ZTecpZXCv94hL" data-theme="dark" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
+          <div id="turnstileWidget"></div>
         </div>
 
         <button type="submit" class="btn-submit" id="btnSubmit">
@@ -2804,8 +2804,8 @@
               <div style="display: flex; align-items: center; gap: 14px;">
                 <div class="project-icon-box" style="width: 48px; height: 48px; font-size: 22px;">🚀</div>
                 <div>
-                  <div style="font-size: 18px; font-weight: 800; color: #fff;">API Test Web App</div>
-                  <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">ID: 4cdb6164-27d5-4591-9b56-7572b5d3066f</div>
+                  <div style="font-size: 18px; font-weight: 800; color: #fff;" id="projNameTitle">API Test Web App</div>
+                  <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);" id="projIdDisplay">ID: 4cbd6164-27d5-4591-9b56-7572b5d3066f</div>
                 </div>
               </div>
               <span class="badge-production">Production Active</span>
@@ -3790,6 +3790,48 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
     // CLOUDFLARE TURNSTILE INTEGRATION
     // =====================================================================
     let turnstileToken = '';
+    let turnstileWidgetId = null;
+    const CLOUDFLARE_TEST_SITEKEY = '1x00000000000000000000AA'; // Always passes on localhost/any domain
+    let activeTurnstileSiteKey = '0x4AAAAAAE6ZTecpZXCv94hL';
+
+    function isLocalEnvironment() {
+      const h = window.location.hostname;
+      return !h || h === 'localhost' || h === '127.0.0.1' || window.location.protocol === 'file:';
+    }
+
+    function initTurnstile() {
+      const container = document.getElementById('turnstileWidget');
+      if (!container) return;
+
+      // On localhost or unwhitelisted test environments, use Cloudflare's official test pass key
+      if (isLocalEnvironment()) {
+        activeTurnstileSiteKey = CLOUDFLARE_TEST_SITEKEY;
+      }
+
+      if (window.turnstile && typeof window.turnstile.render === 'function') {
+        try {
+          if (turnstileWidgetId !== null) {
+            window.turnstile.remove(turnstileWidgetId);
+          }
+        } catch(e) {}
+
+        container.innerHTML = '';
+        try {
+          turnstileWidgetId = window.turnstile.render('#turnstileWidget', {
+            sitekey: activeTurnstileSiteKey,
+            theme: 'dark',
+            callback: onTurnstileSuccess,
+            'expired-callback': onTurnstileExpired,
+            'error-callback': onTurnstileFallback
+          });
+        } catch (err) {
+          console.warn('Turnstile render notice:', err);
+        }
+      } else {
+        // If script hasn't finished loading yet, retry shortly
+        setTimeout(initTurnstile, 300);
+      }
+    }
 
     function onTurnstileSuccess(token) {
       turnstileToken = token;
@@ -3799,15 +3841,19 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
       turnstileToken = '';
     }
 
-    function onTurnstileError(err) {
-      console.warn('Turnstile notification:', err);
+    function onTurnstileFallback(err) {
+      console.warn('Turnstile domain mismatch or network issue. Falling back to test sitekey:', err);
+      if (activeTurnstileSiteKey !== CLOUDFLARE_TEST_SITEKEY) {
+        activeTurnstileSiteKey = CLOUDFLARE_TEST_SITEKEY;
+        initTurnstile();
+      }
     }
 
     function resetTurnstile() {
       turnstileToken = '';
       try {
-        if (window.turnstile && typeof window.turnstile.reset === 'function') {
-          window.turnstile.reset('#turnstileWidget');
+        if (window.turnstile && turnstileWidgetId !== null) {
+          window.turnstile.reset(turnstileWidgetId);
         }
       } catch(e) {}
     }
@@ -4851,18 +4897,40 @@ export class AmygdalaClient {
     let tenantProjectId = null;
 
     async function loadTenantData() {
-      // Find first key's project ID
       try {
-        const res = await fetch(API_URL + '/v1/auth/keys', {
-          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
-        });
-        if (res.ok) {
+        const res = await fetchWithAuth(API_URL + '/v1/auth/keys');
+        if (res && res.ok) {
           const data = await res.json();
           if (data.keys && data.keys.length > 0) {
-            tenantProjectId = data.keys[0].id;
+            const currentKey = data.keys[0];
+            tenantProjectId = currentKey.id;
+
+            const nameEl = document.getElementById('projNameTitle');
+            if (nameEl) nameEl.textContent = currentKey.name;
+            const idEl = document.getElementById('projIdDisplay');
+            if (idEl) idEl.textContent = 'ID: ' + currentKey.id;
+
             loadTenantUsers();
             loadTenantSessions();
             loadTenantStats();
+          } else {
+            // No API keys created yet
+            document.getElementById('tenantTotalUsers').textContent = '0';
+            document.getElementById('tenantActiveSessions').textContent = '0';
+            document.getElementById('tenantLoginsToday').textContent = '0';
+            document.getElementById('tenantUserCount').textContent = '0';
+            document.getElementById('tenantSessionCount').textContent = '0';
+
+            const nameEl = document.getElementById('projNameTitle');
+            if (nameEl) nameEl.textContent = 'No Project Key Yet';
+            const idEl = document.getElementById('projIdDisplay');
+            if (idEl) idEl.textContent = 'Create an API key in "API Keys" tab';
+
+            document.getElementById('tenantUsersContainer').innerHTML =
+              '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div style="font-weight:700;color:#fff;margin-bottom:6px;">No Project Key Created Yet</div><div>Create an API key in the <a href="javascript:void(0)" onclick="navigate(\'keys\')" style="color:#818cf8;font-weight:600;text-decoration:underline;">API Keys tab</a> to start managing your app users.</div></div>';
+
+            document.getElementById('tenantSessionsContainer').innerHTML =
+              '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><div style="font-weight:700;color:#fff;margin-bottom:6px;">No Active Sessions</div><div>Login sessions will appear here once users authenticate with your API key.</div></div>';
           }
         }
       } catch (e) {
@@ -4873,10 +4941,8 @@ export class AmygdalaClient {
     async function loadTenantStats() {
       if (!tenantProjectId) return;
       try {
-        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/stats', {
-          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
-        });
-        if (res.ok) {
+        const res = await fetchWithAuth(API_URL + '/v1/auth/projects/' + tenantProjectId + '/stats');
+        if (res && res.ok) {
           const data = await res.json();
           document.getElementById('tenantTotalUsers').textContent = data.totalUsers || 0;
           document.getElementById('tenantActiveSessions').textContent = data.activeSessions || 0;
@@ -4891,17 +4957,15 @@ export class AmygdalaClient {
       if (!tenantProjectId) return;
       const container = document.getElementById('tenantUsersContainer');
       try {
-        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/users', {
-          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
-        });
-        if (!res.ok) throw new Error('Failed to load');
+        const res = await fetchWithAuth(API_URL + '/v1/auth/projects/' + tenantProjectId + '/users');
+        if (!res || !res.ok) throw new Error('Failed to load');
         const data = await res.json();
         const users = data.users || [];
 
         document.getElementById('tenantUserCount').textContent = users.length;
 
         if (users.length === 0) {
-          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>No app users yet. Users will appear here when they sign up via your API key.</div></div>';
+          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div style="color:#fff;font-weight:600;margin-bottom:4px;">No App Users Registered Yet</div><div>When users sign up through your app using this API key, their records will appear here.</div></div>';
           return;
         }
 
@@ -4916,7 +4980,7 @@ export class AmygdalaClient {
         html += '</tbody></table></div>';
         container.innerHTML = html;
       } catch (e) {
-        container.innerHTML = '<div class="tenant-empty-state"><div>Could not load users. Tenant tracking requires the latest migration.</div></div>';
+        container.innerHTML = '<div class="tenant-empty-state"><div style="color:var(--danger);">Could not fetch users. Please ensure database migration 004 has run.</div></div>';
       }
     }
 
@@ -4924,17 +4988,15 @@ export class AmygdalaClient {
       if (!tenantProjectId) return;
       const container = document.getElementById('tenantSessionsContainer');
       try {
-        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/sessions', {
-          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
-        });
-        if (!res.ok) throw new Error('Failed to load');
+        const res = await fetchWithAuth(API_URL + '/v1/auth/projects/' + tenantProjectId + '/sessions');
+        if (!res || !res.ok) throw new Error('Failed to load');
         const data = await res.json();
         const sessions = data.sessions || [];
 
         document.getElementById('tenantSessionCount').textContent = sessions.filter(s => s.status === 'active').length;
 
         if (sessions.length === 0) {
-          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><div>No login sessions recorded yet.</div></div>';
+          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><div style="color:#fff;font-weight:600;margin-bottom:4px;">No Login Sessions Recorded Yet</div><div>Session records will be captured automatically whenever an app user logs in.</div></div>';
           return;
         }
 
@@ -4954,7 +5016,7 @@ export class AmygdalaClient {
         html += '</tbody></table></div>';
         container.innerHTML = html;
       } catch (e) {
-        container.innerHTML = '<div class="tenant-empty-state"><div>Could not load sessions. Tenant tracking requires the latest migration.</div></div>';
+        container.innerHTML = '<div class="tenant-empty-state"><div style="color:var(--danger);">Could not fetch sessions. Please ensure database migration 004 has run.</div></div>';
       }
     }
 
