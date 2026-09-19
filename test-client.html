@@ -3803,11 +3803,6 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
       const container = document.getElementById('turnstileWidget');
       if (!container) return;
 
-      // On localhost or unwhitelisted test environments, use Cloudflare's official test pass key
-      if (isLocalEnvironment()) {
-        activeTurnstileSiteKey = CLOUDFLARE_TEST_SITEKEY;
-      }
-
       if (window.turnstile && typeof window.turnstile.render === 'function') {
         try {
           if (turnstileWidgetId !== null) {
