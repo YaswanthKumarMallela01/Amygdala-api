@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Cloudflare Turnstile Bot Protection API -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     :root {
       --bg: #000000;
@@ -142,6 +144,12 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -150,7 +158,6 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      overflow-x: hidden;
       background-image: 
         radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
         radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
@@ -386,6 +393,8 @@
       display: none;
       min-height: 100vh;
       width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
       background: #000000;
       position: relative;
       z-index: 1;
@@ -530,6 +539,8 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      max-width: 100vw;
+      overflow-x: hidden;
       background: #000000;
     }
 
@@ -1736,15 +1747,23 @@
 
     @media (max-width: 768px) {
       .sidebar { display: none !important; }
-      .main-wrapper { margin-left: 0 !important; }
+      .main-wrapper { margin-left: 0 !important; width: 100% !important; max-width: 100vw !important; }
       .mobile-menu-toggle { display: flex !important; }
       .mobile-bottom-nav { display: flex !important; }
+
+      /* Hide wide decorative elements on mobile */
+      .celestial-arc { display: none !important; }
+      .ambient-orb { display: none !important; }
+
+      /* Hide redundant topbar icons (already in mobile drawer) */
+      .topbar-icon-btn { display: none !important; }
 
       /* Topbar Mobile Cleanup */
       .topbar {
         height: 58px !important;
         padding: 0 14px !important;
         gap: 10px !important;
+        max-width: 100vw !important;
       }
       .search-box {
         flex: 1 !important;
@@ -1935,6 +1954,166 @@
       }
     }
 
+
+    /* ==========================================================================
+       TENANT USER & SESSION PANELS
+       ========================================================================== */
+    .tenant-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .tenant-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .tenant-panel-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tenant-panel-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .tenant-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .tenant-table th {
+      text-align: left;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .tenant-table td {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-family: var(--font-sans);
+    }
+    .tenant-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .tenant-table td.mono {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .session-status {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .session-status.active {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+    .session-status.revoked {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+    }
+    .session-status.expired {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .tenant-empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    .tenant-empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+    .btn-revoke-session {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-revoke-session:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .btn-refresh-tenant {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-refresh-tenant:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .tenant-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .tenant-stat-card {
+      background: #05080f;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      text-align: center;
+    }
+    .tenant-stat-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .tenant-stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    @media (max-width: 768px) {
+      .tenant-stats-row { grid-template-columns: 1fr !important; }
+      .tenant-panel { padding: 16px !important; }
+      .tenant-table { font-size: 11px !important; }
+      .tenant-table th, .tenant-table td { padding: 8px 8px !important; }
+      .tenant-table .hide-mobile { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -2021,6 +2200,11 @@
             <span>Remember me</span>
           </label>
           <span class="link-sub" onclick="openForgotModal()">Forgot password?</span>
+        </div>
+
+        <!-- Cloudflare Turnstile Bot Verification Widget -->
+        <div id="turnstileWrap" style="display: flex; justify-content: center; margin: 16px 0; min-height: 65px; width: 100%;">
+          <div id="turnstileWidget" class="cf-turnstile" data-sitekey="0x4AAAAAAE6ZTecpZXCv94hL" data-theme="dark" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-error-callback="onTurnstileError"></div>
         </div>
 
         <button type="submit" class="btn-submit" id="btnSubmit">
@@ -2644,6 +2828,64 @@
 
             <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
               This project acts as the multi-tenant identity pool for your web application. All users authenticated through your API keys belong to this workspace tenant.
+            </div>
+          </div>
+
+          <!-- Tenant Stats -->
+          <div class="tenant-stats-row" id="tenantStatsRow">
+            <div class="tenant-stat-card">
+              <div class="tenant-stat-val" id="tenantTotalUsers">—</div>
+              <div class="tenant-stat-label">Total App Users</div>
+            </div>
+            <div class="tenant-stat-card">
+              <div class="tenant-stat-val" id="tenantActiveSessions">—</div>
+              <div class="tenant-stat-label">Active Sessions</div>
+            </div>
+            <div class="tenant-stat-card">
+              <div class="tenant-stat-val" id="tenantLoginsToday">—</div>
+              <div class="tenant-stat-label">Logins Today</div>
+            </div>
+          </div>
+
+          <!-- Live App Users Panel -->
+          <div class="tenant-panel">
+            <div class="tenant-panel-header">
+              <div class="tenant-panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Live App Users
+                <span class="tenant-panel-badge" id="tenantUserCount">0</span>
+              </div>
+              <button class="btn-refresh-tenant" onclick="loadTenantUsers()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Refresh
+              </button>
+            </div>
+            <div id="tenantUsersContainer">
+              <div class="tenant-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <div>No app users yet. Users will appear here when they sign up via your API key.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Login Sessions Panel -->
+          <div class="tenant-panel">
+            <div class="tenant-panel-header">
+              <div class="tenant-panel-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Active Login Sessions
+                <span class="tenant-panel-badge" id="tenantSessionCount" style="background: rgba(16,185,129,0.15); color: #10b981; border-color: rgba(16,185,129,0.3);">0</span>
+              </div>
+              <button class="btn-refresh-tenant" onclick="loadTenantSessions()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Refresh
+              </button>
+            </div>
+            <div id="tenantSessionsContainer">
+              <div class="tenant-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <div>No login sessions recorded yet. Sessions will appear when users authenticate through your app.</div>
+              </div>
             </div>
           </div>
         </div>
@@ -3543,6 +3785,33 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
   </div>
 
   <script>
+
+    // =====================================================================
+    // CLOUDFLARE TURNSTILE INTEGRATION
+    // =====================================================================
+    let turnstileToken = '';
+
+    function onTurnstileSuccess(token) {
+      turnstileToken = token;
+    }
+
+    function onTurnstileExpired() {
+      turnstileToken = '';
+    }
+
+    function onTurnstileError(err) {
+      console.warn('Turnstile notification:', err);
+    }
+
+    function resetTurnstile() {
+      turnstileToken = '';
+      try {
+        if (window.turnstile && typeof window.turnstile.reset === 'function') {
+          window.turnstile.reset('#turnstileWidget');
+        }
+      } catch(e) {}
+    }
+
     // Configuration
     const API_URL = window.location.origin;
     const MASTER_API_KEY = 'c3db9f34bb9ff096f3bd4b9aebeb880431ded272c8232875191e2cb98d410a3f';
@@ -3676,6 +3945,7 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
 
     function setAuthMode(mode) {
       currentAuthMode = mode;
+      resetTurnstile();
       const tabIn = document.getElementById('tabSignIn');
       const tabUp = document.getElementById('tabSignUp');
       const btn = document.getElementById('btnSubmitText');
@@ -3802,6 +4072,7 @@ jwks_client = <span class="tok-fn">PyJWKClient</span>(url)
 
           loadUserProfile();
           loadKeys();
+          loadTenantData();
           switchSnippet('curl');
           return;
         }
@@ -4233,6 +4504,18 @@ export class AmygdalaClient {
       const password = document.getElementById('authPassword').value;
       const name = document.getElementById('authName').value.trim();
 
+      // Extract Cloudflare Turnstile token
+      let cfToken = turnstileToken;
+      if (!cfToken && window.turnstile && typeof window.turnstile.getResponse === 'function') {
+        try {
+          cfToken = window.turnstile.getResponse('#turnstileWidget') || '';
+        } catch(e) {}
+      }
+      if (!cfToken) {
+        const cfInput = document.querySelector('[name="cf-turnstile-response"]');
+        if (cfInput && cfInput.value) cfToken = cfInput.value;
+      }
+
       if (session.mfaToken) {
         const code = document.getElementById('loginMfaCode').value.trim();
         try {
@@ -4258,13 +4541,18 @@ export class AmygdalaClient {
 
       if (currentAuthMode === 'login') {
         try {
+          const loginPayload = { email, password };
+          if (cfToken) loginPayload.turnstileToken = cfToken;
           const res = await fetch(API_URL + '/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': MASTER_API_KEY },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(loginPayload)
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Login failed');
+          if (!res.ok) {
+            resetTurnstile();
+            throw new Error(data.error || 'Login failed');
+          }
 
           if (data.mfaRequired) {
             session.mfaToken = data.mfaToken;
@@ -4284,10 +4572,13 @@ export class AmygdalaClient {
           const res = await fetch(API_URL + '/v1/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': MASTER_API_KEY },
-            body: JSON.stringify({ email, password, name, turnstileToken: 'test' })
+            body: JSON.stringify({ email, password, name, turnstileToken: cfToken || 'test' })
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Signup failed');
+          if (!res.ok) {
+            resetTurnstile();
+            throw new Error(data.error || 'Signup failed');
+          }
           setSessionTokens(data.accessToken, data.refreshToken);
           syncView();
         } catch (err) {
@@ -4526,6 +4817,21 @@ export class AmygdalaClient {
 
     // Auto-catch OAuth tokens in URL hash
     window.addEventListener('DOMContentLoaded', () => {
+      // Dynamic Cloudflare Turnstile site key configuration from server
+      try {
+        fetch(API_URL + '/config')
+          .then(r => r.json())
+          .then(cfg => {
+            if (cfg && cfg.turnstileSiteKey) {
+              const widget = document.getElementById('turnstileWidget');
+              if (widget && widget.getAttribute('data-sitekey') !== cfg.turnstileSiteKey) {
+                widget.setAttribute('data-sitekey', cfg.turnstileSiteKey);
+              }
+            }
+          })
+          .catch(() => {});
+      } catch(e) {}
+
       const hash = window.location.hash ? window.location.hash.substring(1) : '';
       if (hash) {
         const params = new URLSearchParams(hash);
@@ -4538,6 +4844,138 @@ export class AmygdalaClient {
       }
       syncView();
     });
+
+    // =====================================================================
+    // TENANT USER & SESSION MANAGEMENT
+    // =====================================================================
+    let tenantProjectId = null;
+
+    async function loadTenantData() {
+      // Find first key's project ID
+      try {
+        const res = await fetch(API_URL + '/v1/auth/keys', {
+          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.keys && data.keys.length > 0) {
+            tenantProjectId = data.keys[0].id;
+            loadTenantUsers();
+            loadTenantSessions();
+            loadTenantStats();
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load tenant data:', e);
+      }
+    }
+
+    async function loadTenantStats() {
+      if (!tenantProjectId) return;
+      try {
+        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/stats', {
+          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('tenantTotalUsers').textContent = data.totalUsers || 0;
+          document.getElementById('tenantActiveSessions').textContent = data.activeSessions || 0;
+          document.getElementById('tenantLoginsToday').textContent = data.loginsToday || 0;
+        }
+      } catch (e) {
+        console.warn('Could not load tenant stats:', e);
+      }
+    }
+
+    async function loadTenantUsers() {
+      if (!tenantProjectId) return;
+      const container = document.getElementById('tenantUsersContainer');
+      try {
+        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/users', {
+          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
+        });
+        if (!res.ok) throw new Error('Failed to load');
+        const data = await res.json();
+        const users = data.users || [];
+
+        document.getElementById('tenantUserCount').textContent = users.length;
+
+        if (users.length === 0) {
+          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>No app users yet. Users will appear here when they sign up via your API key.</div></div>';
+          return;
+        }
+
+        let html = '<div style="overflow-x: auto;"><table class="tenant-table"><thead><tr><th>Email</th><th>Name</th><th class="hide-mobile">User ID</th><th>Joined</th></tr></thead><tbody>';
+        users.forEach(u => {
+          const joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          html += '<tr><td style="color: #fff; font-weight: 600;">' + escapeHtml(u.email) + '</td>';
+          html += '<td>' + (u.name ? escapeHtml(u.name) : '<span style="color: var(--text-dim);">—</span>') + '</td>';
+          html += '<td class="mono hide-mobile" style="font-size: 11px;">' + escapeHtml(u.id).substring(0, 8) + '…</td>';
+          html += '<td>' + joined + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div class="tenant-empty-state"><div>Could not load users. Tenant tracking requires the latest migration.</div></div>';
+      }
+    }
+
+    async function loadTenantSessions() {
+      if (!tenantProjectId) return;
+      const container = document.getElementById('tenantSessionsContainer');
+      try {
+        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/sessions', {
+          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
+        });
+        if (!res.ok) throw new Error('Failed to load');
+        const data = await res.json();
+        const sessions = data.sessions || [];
+
+        document.getElementById('tenantSessionCount').textContent = sessions.filter(s => s.status === 'active').length;
+
+        if (sessions.length === 0) {
+          container.innerHTML = '<div class="tenant-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><div>No login sessions recorded yet.</div></div>';
+          return;
+        }
+
+        let html = '<div style="overflow-x: auto;"><table class="tenant-table"><thead><tr><th>User</th><th>IP Address</th><th class="hide-mobile">Device</th><th>Logged In</th><th>Status</th><th></th></tr></thead><tbody>';
+        sessions.forEach(s => {
+          const loggedIn = new Date(s.logged_in_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const deviceShort = s.device_info ? escapeHtml(s.device_info).substring(0, 40) + (s.device_info.length > 40 ? '…' : '') : '—';
+          html += '<tr>';
+          html += '<td style="color: #fff; font-weight: 600;">' + escapeHtml(s.user_email) + (s.user_name ? '<br><span style="font-size:11px;color:var(--text-dim);">' + escapeHtml(s.user_name) + '</span>' : '') + '</td>';
+          html += '<td class="mono">' + (s.ip_address || '—') + '</td>';
+          html += '<td class="hide-mobile" style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + deviceShort + '</td>';
+          html += '<td>' + loggedIn + '</td>';
+          html += '<td><span class="session-status ' + s.status + '">' + s.status + '</span></td>';
+          html += '<td>' + (s.status === 'active' ? '<button class="btn-revoke-session" onclick="revokeSession(\'' + s.id + '\')">Revoke</button>' : '') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div class="tenant-empty-state"><div>Could not load sessions. Tenant tracking requires the latest migration.</div></div>';
+      }
+    }
+
+    async function revokeSession(sessionId) {
+      if (!tenantProjectId || !confirm('Revoke this session?')) return;
+      try {
+        const res = await fetch(API_URL + '/v1/auth/projects/' + tenantProjectId + '/sessions/' + sessionId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + session.accessToken, 'x-api-key': MASTER_API_KEY }
+        });
+        if (res.ok) {
+          loadTenantSessions();
+          loadTenantStats();
+        } else {
+          alert('Failed to revoke session');
+        }
+      } catch (e) {
+        alert('Error revoking session: ' + e.message);
+      }
+    }
+
   </script>
 </body>
 </html>

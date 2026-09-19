@@ -20,7 +20,15 @@ router.post('/', validate(bodySchema), turnstileRequired(), async (req, res) => 
   const { email, password, name } = req.body;
   
   try {
-    const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
+    const clientId = req.apiClient?.id || null;
+    
+    let existing;
+    if (clientId) {
+      existing = await query('SELECT id FROM users WHERE email = $1 AND client_id = $2', [email, clientId]);
+    } else {
+      existing = await query('SELECT id FROM users WHERE email = $1 AND client_id IS NULL', [email]);
+    }
+
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Email already exists' });
     }
@@ -28,14 +36,22 @@ router.post('/', validate(bodySchema), turnstileRequired(), async (req, res) => 
     const hashedPassword = await hashPassword(password);
     
     const result = await query(
-      'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name',
-      [email, hashedPassword, name || null]
+      'INSERT INTO users (email, password_hash, name, client_id) VALUES ($1, $2, $3, $4) RETURNING id, email, name',
+      [email, hashedPassword, name || null, clientId]
     );
     const user = result.rows[0];
     
     logger.info({ userId: user.id }, 'User signup successful');
     
     const deviceInfo = req.header('user-agent');
+    
+    if (clientId) {
+      await query(
+        `INSERT INTO tenant_login_sessions (client_id, user_id, user_email, user_name, ip_address, device_info)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [clientId, user.id, user.email, user.name, req.ip || 'unknown', deviceInfo]
+      );
+    }
     const { rawToken: refreshToken } = await createRefreshToken(user.id, deviceInfo);
     const accessToken = signAccessToken({ sub: user.id, email: user.email, name: user.name || undefined });
     

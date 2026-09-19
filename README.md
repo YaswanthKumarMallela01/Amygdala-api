@@ -167,219 +167,70 @@ Copy `.env.example` → `.env` and fill in every value. All variables are **requ
 | `GET` | `/v1/auth/oauth/google/callback` | — | Google callback (public) |
 | `GET` | `/v1/auth/oauth/github/callback` | — | GitHub callback (public) |
 
-### User Profile & Keys
+### Multi-Tenant User & Session Management
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/v1/auth/me` | API Key + Bearer | Get user profile (id, email, name, email_verified, mfa_enabled) |
-| `PATCH` | `/v1/auth/me` | API Key + Bearer | Update user display name (`{ name }`) |
-| `DELETE` | `/v1/auth/me` | API Key + Bearer | Permanently delete account & revoke all sessions |
-| `GET` | `/v1/auth/keys` | API Key + Bearer | List your API keys |
-| `POST` | `/v1/auth/keys` | API Key + Bearer | Generate new API key (max 3) |
-| `DELETE` | `/v1/auth/keys/:id` | API Key + Bearer | Delete an API key |
-
-### Public
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `GET` | `/v1/auth/.well-known/jwks.json` | — | RSA public key (JWKS format) |
-| `GET` | `/health` | — | Health check |
-
----
-
-### Endpoint Details
-
-<details>
-<summary><strong>POST /v1/auth/signup</strong></summary>
-
-```json
-// Request
-{
-  "email": "user@example.com",
-  "password": "securePassword123",
-  "turnstileToken": "cf-turnstile-response"
-}
-
-// Response 200
-{
-  "accessToken": "eyJhbGci...",
-  "refreshToken": "a3f2c9d8...",
-  "user": { "id": "uuid", "email": "user@example.com" }
-}
-```
-
-| Status | Error |
-|---|---|
-| `409` | Email already exists |
-| `403` | Turnstile verification failed |
-| `400` | Validation error |
-
-</details>
-
-<details>
-<summary><strong>POST /v1/auth/login</strong></summary>
-
-```json
-// Request
-{
-  "email": "user@example.com",
-  "password": "securePassword123",
-  "turnstileToken": "optional"
-}
-
-// Response 200 (no MFA)
-{
-  "accessToken": "eyJhbGci...",
-  "refreshToken": "a3f2c9d8...",
-  "user": { "id": "uuid", "email": "user@example.com" }
-}
-
-// Response 200 (MFA enabled)
-{
-  "mfaRequired": true,
-  "mfaToken": "eyJhbGci..."
-}
-```
-
-When `mfaRequired` is `true`, call `/v1/auth/mfa/verify` with the `mfaToken` as the Bearer token.
-
-</details>
-
-<details>
-<summary><strong>POST /v1/auth/refresh</strong></summary>
-
-```json
-// Request
-{ "refreshToken": "a3f2c9d8..." }
-
-// Response 200
-{
-  "accessToken": "eyJhbGci...",
-  "refreshToken": "new-b4e5f6..."
-}
-```
-
-Uses **reuse detection** — presenting a revoked token revokes the entire token family.
-
-</details>
-
-<details>
-<summary><strong>POST /v1/auth/mfa/enroll</strong> — Requires Bearer token</summary>
-
-```json
-// Response 200
-{
-  "secret": "JBSWY3DPEHPK3PXP",
-  "qrCode": "data:image/png;base64,...",
-  "uri": "otpauth://totp/Amygdala:user@example.com?secret=..."
-}
-```
-
-</details>
-
-<details>
-<summary><strong>POST /v1/auth/mfa/verify</strong></summary>
-
-Dual purpose depending on the token type in the `Authorization` header:
-
-| Token Type | Result |
-|---|---|
-| Regular access token (after `/mfa/enroll`) | `{ "message": "MFA enabled successfully" }` |
-| MFA token (from login) | `{ "accessToken": "...", "refreshToken": "..." }` |
-
-```json
-// Request
-{ "code": "123456" }
-```
-
-</details>
-
-<details>
-<summary><strong>User Profile: GET / PATCH / DELETE /v1/auth/me</strong> — Requires Bearer token</summary>
-
-**GET /v1/auth/me** — Returns current user profile:
-```json
-// Response 200
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "name": "Yaswanth Kumar",
-  "email_verified": true,
-  "mfa_enabled": true,
-  "created_at": "2025-01-01T00:00:00Z"
-}
-```
-
-**PATCH /v1/auth/me** — Update display name:
-```json
-// Request
-{ "name": "New Display Name" }
-
-// Response 200
-{ "message": "Profile updated successfully", "name": "New Display Name" }
-```
-
-**DELETE /v1/auth/me** — Permanently delete user account:
-```json
-// Response 200
-{ "message": "Account permanently deleted" }
-```
-
-</details>
-
-<details>
-<summary><strong>API Key Management</strong> — Requires Bearer token</summary>
-
-**POST /v1/auth/keys** — Generate (max 3 per account):
-```json
-// Request
-{ "name": "My App", "allowedOrigins": ["https://myapp.com"] }
-
-// Response 201
-{
-  "apiKey": "shown-once-only",
-  "key": { "id": "uuid", "name": "My App", "allowed_origins": [...], "created_at": "..." },
-  "message": "API Key generated successfully. Save this key now; it will not be displayed again."
-}
-```
-
-**GET /v1/auth/keys** — List all keys.
-
-**DELETE /v1/auth/keys/:id** — Delete a key.
+| `GET` | `/v1/auth/projects/:id/users` | API Key + Bearer | List all users scoped to an API key/project |
+| `GET` | `/v1/auth/projects/:id/sessions` | API Key + Bearer | List login sessions for a project |
+| `DELETE` | `/v1/auth/projects/:id/sessions/:sessionId` | API Key + Bearer | Revoke a specific login session |
+| `GET` | `/v1/auth/projects/:id/stats` | API Key + Bearer | Get aggregate stats (total users, active sessions, logins today) |
 
 </details>
 
 ---
 
-## Integration Guide
+## Multi-Tenant Architecture
 
-### For Frontend Developers
+Amygdala supports **per-API-key user isolation** — each API key acts as its own tenant, with its own isolated user pool and login session tracking.
 
-**Step 1 — Add your API key to every request:**
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Developer Account (you)                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │  API Key #1   │  │  API Key #2   │  │  API Key #3   │     │
+│  │  (Prod App)   │  │  (Staging)    │  │  (Mobile)     │     │
+│  │  ┌─────────┐  │  │  ┌─────────┐  │  │  ┌─────────┐  │   │
+│  │  │ Users   │  │  │  │ Users   │  │  │  │ Users   │  │   │
+│  │  │ alice@  │  │  │  │ alice@  │  │  │  │ bob@    │  │   │
+│  │  │ bob@    │  │  │  │ charlie@│  │  │  │ dave@   │  │   │
+│  │  └─────────┘  │  │  └─────────┘  │  │  └─────────┘  │   │
+│  │  ┌─────────┐  │  │  ┌─────────┐  │  │  ┌─────────┐  │   │
+│  │  │Sessions │  │  │  │Sessions │  │  │  │Sessions │  │   │
+│  │  └─────────┘  │  │  └─────────┘  │  │  └─────────┘  │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **Same email, different projects**: `alice@example.com` can sign up independently in API Key #1 and API Key #2 — they're treated as separate users with separate credentials.
+- **Login sessions tracked per project**: Every login through your API key creates a `tenant_login_sessions` record with IP address, device info, timestamps, and status.
+- **Ownership-verified access**: Only the developer who created the API key can view its users and sessions (via Bearer token ownership check against `api_clients.user_id`).
+- **Session revocation**: Developers can revoke individual login sessions in real-time.
+
+### Viewing Your App's Users & Sessions
+
 ```javascript
-const API_URL = 'https://amygdala-api-37nt.onrender.com';
-const API_KEY = 'your-api-key';
-
-const res = await fetch(`${API_URL}/v1/auth/login`, {
-  method: 'POST',
+// List all users who signed up via your API key
+const users = await fetch(`${API_URL}/v1/auth/projects/${apiKeyId}/users`, {
   headers: {
-    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${accessToken}`,
     'x-api-key': API_KEY,
   },
-  body: JSON.stringify({ email, password }),
 });
-```
 
-**Step 2 — Store tokens:**
-```javascript
-const { accessToken, refreshToken } = await res.json();
-// accessToken → sessionStorage or memory (15-min expiry)
-// refreshToken → localStorage or secure cookie (30-day expiry)
-```
+// List login sessions
+const sessions = await fetch(`${API_URL}/v1/auth/projects/${apiKeyId}/sessions`, {
+  headers: {
+    'Authorization': `Bearer ${accessToken}`,
+    'x-api-key': API_KEY,
+  },
+});
 
-**Step 3 — Call protected endpoints:**
-```javascript
-const me = await fetch(`${API_URL}/v1/auth/me`, {
+// Revoke a suspicious session
+await fetch(`${API_URL}/v1/auth/projects/${apiKeyId}/sessions/${sessionId}`, {
+  method: 'DELETE',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
     'x-api-key': API_KEY,
@@ -387,36 +238,15 @@ const me = await fetch(`${API_URL}/v1/auth/me`, {
 });
 ```
 
-**Step 4 — Auto-refresh on 401:**
-```javascript
-// When you get a 401, call /v1/auth/refresh with the stored refreshToken
-// Replace both tokens with the new pair
-```
+### Database Schema
 
-### For Backend Developers — Verify JWTs Locally
+The multi-tenant isolation adds:
 
-Fetch the JWKS and verify tokens without calling the API:
-
-```javascript
-const jwksClient = require('jwks-rsa');
-const jwt = require('jsonwebtoken');
-
-const client = jwksClient({
-  jwksUri: 'https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json'
-});
-
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, (err, key) => {
-    callback(null, key.getPublicKey());
-  });
-}
-
-jwt.verify(token, getKey, { algorithms: ['RS256'], issuer: 'amygdala' }, (err, decoded) => {
-  if (err) return console.error('Invalid token');
-  console.log('User ID:', decoded.sub);
-  console.log('Email:', decoded.email);
-});
-```
+| Table | Purpose |
+|---|---|
+| `users.client_id` | Nullable FK → `api_clients.id`. NULL for developer/master accounts. Scopes user to a specific API key tenant. |
+| `tenant_login_sessions` | Records every login event with `client_id`, `user_id`, `user_email`, `ip_address`, `device_info`, `status` (active/expired/revoked), and timestamps. |
+| Unique Constraint | `UNIQUE(COALESCE(client_id, nil_uuid), email)` — same email can exist in different projects. |
 
 ---
 
@@ -436,6 +266,7 @@ jwt.verify(token, getKey, { algorithms: ['RS256'], issuer: 'amygdala' }, (err, d
 | Input validation | Zod schemas on every request body |
 | Security headers | helmet.js (CSP, HSTS, X-Frame-Options, etc.) |
 | API key auth | SHA-256 hashed, per-client CORS origins |
+| Tenant isolation | Per-API-key user pools, ownership-verified data access |
 | Logging | Pino structured JSON (never logs passwords/tokens) |
 
 ---
@@ -478,7 +309,9 @@ amygdala/
 │   │   ├── migrate.ts              # Migration runner
 │   │   └── migrations/
 │   │       ├── 001_initial.sql     # Core schema
-│   │       └── 002_add_user_id_to_api_clients.sql
+│   │       ├── 002_add_user_id_to_api_clients.sql
+│   │       ├── 003_add_name_to_users.sql
+│   │       └── 004_multi_tenant_partition.sql  # Multi-tenant isolation
 │   ├── middleware/
 │   │   ├── api-key.ts              # x-api-key validation + per-client CORS
 │   │   ├── auth.ts                 # Bearer JWT verification
@@ -487,14 +320,15 @@ amygdala/
 │   │   └── validate.ts             # Zod request body validation
 │   ├── routes/v1/auth/
 │   │   ├── index.ts                # Route registration
-│   │   ├── signup.ts               # POST /signup
-│   │   ├── login.ts                # POST /login
+│   │   ├── signup.ts               # POST /signup (tenant-scoped)
+│   │   ├── login.ts                # POST /login (tenant-scoped + session tracking)
 │   │   ├── refresh.ts              # POST /refresh
 │   │   ├── logout.ts               # POST /logout
 │   │   ├── forgot-password.ts      # POST /forgot-password
 │   │   ├── reset-password.ts       # POST /reset-password
 │   │   ├── me.ts                   # GET /me
 │   │   ├── keys.ts                 # GET/POST/DELETE /keys
+│   │   ├── projects.ts             # GET/DELETE /projects/:id/* (tenant management)
 │   │   ├── jwks.ts                 # GET /.well-known/jwks.json
 │   │   ├── mfa/
 │   │   │   ├── enroll.ts           # POST /mfa/enroll
@@ -529,4 +363,5 @@ amygdala/
 ## License
 
 MIT
+
 

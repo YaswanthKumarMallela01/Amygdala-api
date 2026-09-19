@@ -8,6 +8,8 @@ import { apiKeyMiddleware } from './middleware/api-key';
 import { createRateLimiter } from './middleware/rate-limit';
 import authRouter from './routes/v1/auth';
 
+import { env } from './config/env';
+
 const app = express();
 
 app.use(helmet({
@@ -23,6 +25,14 @@ app.use('/v1/auth', apiKeyMiddleware, authRouter);
 // Health check (no API key required)
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// Public config for frontend (Turnstile sitekey, etc.)
+app.get('/config', (_req, res) => {
+  res.json({
+    turnstileSiteKey: env.TURNSTILE_SITE_KEY,
+    appName: 'Amygdala'
+  });
+});
+
 // Favicon handler
 app.get(['/favicon.ico', '/fevicon.png'], (_req, res) => {
   const p = path.join(process.cwd(), 'fevicon.png');
@@ -32,18 +42,22 @@ app.get(['/favicon.ico', '/fevicon.png'], (_req, res) => {
   res.status(204).end();
 });
 
-// Helper to serve test dashboard
+// Helper to serve test dashboard with dynamic config injection
 function serveTestDashboard(_req: express.Request, res: express.Response) {
-  const filePath = path.join(__dirname, '../test-client.html');
-  if (fs.existsSync(filePath)) {
-    return res.sendFile(filePath);
+  let filePath = path.join(__dirname, '../test-client.html');
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(process.cwd(), 'test-client.html');
   }
-  // Fallback if running from root or dist
-  const rootPath = path.join(process.cwd(), 'test-client.html');
-  if (fs.existsSync(rootPath)) {
-    return res.sendFile(rootPath);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('test-client.html not found');
   }
-  res.status(404).send('test-client.html not found');
+
+  let html = fs.readFileSync(filePath, 'utf8');
+  if (env.TURNSTILE_SITE_KEY) {
+    html = html.replace(/data-sitekey="[^"]*"/g, `data-sitekey="${env.TURNSTILE_SITE_KEY}"`);
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
 }
 
 // Serve Test Authentication Dashboard at root and /test

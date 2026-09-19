@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  client_id: string | null;
   name: string | null;
   password_hash: string | null;
   email_verified: boolean;
@@ -48,9 +49,24 @@ export interface LoginAttempt {
 export interface ApiClient {
   id: string;
   name: string;
+  user_id: string;
   api_key_hash: string;
   allowed_origins: string[];
   created_at: Date;
+}
+
+export interface TenantLoginSession {
+  id: string;
+  client_id: string;
+  user_id: string;
+  user_email: string;
+  user_name: string | null;
+  ip_address: string | null;
+  device_info: string | null;
+  logged_in_at: Date;
+  last_active_at: Date;
+  status: 'active' | 'expired' | 'revoked';
+  family_id: string | null;
 }
 
 // Express request extensions

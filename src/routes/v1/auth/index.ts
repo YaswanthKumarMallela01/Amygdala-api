@@ -13,6 +13,7 @@ import mfaVerifyRouter from './mfa/verify';
 import googleOAuthRouter from './oauth/google';
 import githubOAuthRouter from './oauth/github';
 import keysRouter from './keys';
+import projectsRouter from './projects';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/forgot-password', forgotPasswordRouter);
 router.use('/reset-password', resetPasswordRouter);
 router.use('/me', meRouter);
 router.use('/keys', keysRouter);
+router.use('/projects', projectsRouter);
 router.use('/.well-known/jwks.json', jwksRouter);
 router.use('/mfa/enroll', mfaEnrollRouter);
 router.use('/mfa/verify', mfaVerifyRouter);

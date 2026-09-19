@@ -23,23 +23,29 @@ router.post('/', validate(bodySchema), turnstileConditional(), async (req, res) 
   const ip = req.ip || req.connection?.remoteAddress || 'unknown';
   
   try {
-    const result = await query('SELECT id, email, name, password_hash, mfa_secret FROM users WHERE email = $1', [email]);
+    const clientId = req.apiClient?.id || null;
+    let result;
+    if (clientId) {
+      result = await query('SELECT id, email, name, password_hash, mfa_secret FROM users WHERE email = $1 AND client_id = $2', [email, clientId]);
+    } else {
+      result = await query('SELECT id, email, name, password_hash, mfa_secret FROM users WHERE email = $1 AND client_id IS NULL', [email]);
+    }
     const user = result.rows[0];
     
     if (!user || !user.password_hash) {
       await incrementFailedLoginAttempts(`login_attempts:${email}`);
-      await query('INSERT INTO login_attempts (email, ip_address, success) VALUES ($1, $2, $3)', [email, ip, false]);
+      await query('INSERT INTO login_attempts (email, ip_address, success, client_id) VALUES ($1, $2, $3, $4)', [email, ip, false, clientId]);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
     const isValid = await verifyPassword(user.password_hash, password);
     if (!isValid) {
       await incrementFailedLoginAttempts(`login_attempts:${email}`);
-      await query('INSERT INTO login_attempts (email, ip_address, success) VALUES ($1, $2, $3)', [email, ip, false]);
+      await query('INSERT INTO login_attempts (email, ip_address, success, client_id) VALUES ($1, $2, $3, $4)', [email, ip, false, clientId]);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    await query('INSERT INTO login_attempts (email, ip_address, success) VALUES ($1, $2, $3)', [email, ip, true]);
+    await query('INSERT INTO login_attempts (email, ip_address, success, client_id) VALUES ($1, $2, $3, $4)', [email, ip, true, clientId]);
     
     if (user.mfa_secret) {
       const mfaToken = jwt.sign({ sub: user.id, scope: 'mfa' }, env.JWT_PRIVATE_KEY, { algorithm: 'RS256', expiresIn: '5m' });
@@ -49,6 +55,14 @@ router.post('/', validate(bodySchema), turnstileConditional(), async (req, res) 
     const deviceInfo = req.header('user-agent');
     const { rawToken: refreshToken } = await createRefreshToken(user.id, deviceInfo);
     const accessToken = signAccessToken({ sub: user.id, email: user.email, name: user.name || undefined, mfa_verified: true });
+    
+    if (clientId) {
+      await query(
+        `INSERT INTO tenant_login_sessions (client_id, user_id, user_email, user_name, ip_address, device_info)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [clientId, user.id, user.email, user.name, ip, deviceInfo]
+      );
+    }
     
     res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name || null } });
   } catch (err) {
