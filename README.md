@@ -16,7 +16,7 @@ Cloudflare Turnstile bot protection, and Redis-backed rate limiting.
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-YaswanthKumarMallela01%2FAmygdala--api-181717?logo=github&logoColor=white)](https://github.com/YaswanthKumarMallela01/Amygdala-api)
 
-[Live API](https://amygdala-api-37nt.onrender.com) · [Test Dashboard](https://amygdala-api-37nt.onrender.com/test) · [JWKS](https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json) · [GitHub Repo](https://github.com/YaswanthKumarMallela01/Amygdala-api)
+[Live API](https://amygdala-api-37nt.onrender.com) · [Developer Dashboard](https://amygdala-api-37nt.onrender.com/test) · [Client Demo](https://amygdala-api-37nt.onrender.com/client) · [JWKS](https://amygdala-api-37nt.onrender.com/v1/auth/.well-known/jwks.json) · [GitHub Repo](https://github.com/YaswanthKumarMallela01/Amygdala-api)
 
 </div>
 
