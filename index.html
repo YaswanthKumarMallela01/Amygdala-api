@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amygdala Client Demo (v1.1.0)</title>
+  <link rel="icon" type="image/png" href="/fevicon.png" />
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,6 +41,8 @@
       padding: 8px 18px;
       font-size: 12px;
       display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       align-items: center;
       justify-content: space-between;
       color: #c7d2fe;
@@ -51,6 +54,20 @@
       color: #38bdf8;
       font-family: monospace;
     }
+
+    /* --- FILE PROTOCOL WARNING --- */
+    .file-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 12.5px;
+      color: #fde68a;
+      line-height: 1.5;
+    }
+    .file-warning strong { color: #fbbf24; }
+    .file-warning a { color: #38bdf8; text-decoration: underline; font-weight: 600; }
 
     /* --- NAV --- */
     nav {
@@ -205,8 +222,10 @@
 
   <script>
     // ==================== CONFIGURATION ====================
-    // Default API and Master / Project API Key
-    let API = localStorage.getItem('amygdala_test_api') || 'https://amygdala-api-37nt.onrender.com';
+    const isFileProtocol = window.location.protocol === 'file:';
+    const isHostedOnServer = window.location.hostname.includes('onrender.com');
+
+    let API = localStorage.getItem('amygdala_test_api') || (isHostedOnServer ? window.location.origin : 'https://amygdala-api-37nt.onrender.com');
     let API_KEY = localStorage.getItem('amygdala_test_key') || 'f99299f4c9aaee70b59be78fcdab9cd1f1a3ae173a325bd9ae1a6529293586ff';
     let TURNSTILE_SITE_KEY = '0x4AAAAAAE6ZTecpZXCv94hL';
 
@@ -318,15 +337,6 @@
       return h.split('?')[0];
     }
 
-    function getHashParams() {
-      const hash = location.hash;
-      const frag = hash.includes('access_token') ? hash.substring(hash.indexOf('access_token')) : '';
-      if (!frag) return {};
-      const params = {};
-      frag.split('&').forEach(p => { const [k, v] = p.split('='); if (k && v) params[k] = decodeURIComponent(v); });
-      return params;
-    }
-
     function getQueryParams() {
       const hash = location.hash;
       const qi = hash.indexOf('?');
@@ -383,7 +393,12 @@
         if (at) {
           setTokens(at, rt);
           toast('Logged in successfully via OAuth!', 'success');
-          window.location.hash = '#/dashboard';
+          // Clean hash to avoid keeping tokens in browser address bar
+          if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', window.location.pathname + '#/dashboard');
+          } else {
+            window.location.hash = '#/dashboard';
+          }
           return true;
         }
       }
@@ -410,7 +425,16 @@
 
     // ==================== CONFIG DRAWER HELPER ====================
     function renderConfigAccordion() {
+      const fileWarningHtml = isFileProtocol ? `
+        <div class="file-warning">
+          <strong>⚠️ Running via local file (<code>file://</code>):</strong><br/>
+          OAuth providers (Google, GitHub) cannot redirect back to <code>file://</code> URLs for security reasons.<br/>
+          To test Google / GitHub OAuth, please serve this file via HTTP (e.g. <strong>VS Code Live Server</strong> at <code>http://localhost:5500/index.html</code>) or test directly on Render: <a href="https://amygdala-api-37nt.onrender.com/client" target="_blank">amygdala-api-37nt.onrender.com/client</a>.
+        </div>
+      ` : '';
+
       return `
+        ${fileWarningHtml}
         <details class="config-accordion">
           <summary>⚙️ API &amp; Tenant Key Settings</summary>
           <div class="config-inputs">
@@ -600,72 +624,104 @@
       (async () => {
         try {
           const res = await apiFetch('/v1/auth/me');
-          if (!res.ok) { toast('Session expired', 'error'); clearTokens(); navigate('login'); return; }
-          const user = await res.json();
-          const jwt = decodeJwt(accessToken);
+          if (!res.ok) { clearTokens(); navigate('login'); return; }
+          const data = await res.json();
+          const user = data.user;
+          const jwtPayload = decodeJwt(accessToken);
 
           app.innerHTML = `
-            <div class="card" style="max-width:540px;">
-              <h2>👋 Tenant User Dashboard</h2>
-              <p class="subtitle">Authenticated through API Key: <code>${API_KEY.substring(0, 10)}…</code></p>
+            <div class="card" style="max-width: 520px;">
+              <h2>👤 Tenant Account</h2>
+              <p class="subtitle">Authenticated under API Key: <code>${API_KEY.substring(0, 8)}…</code></p>
+              
               <div class="profile-card">
-                <div class="profile-row"><span class="label">User ID</span><span class="value" style="font-family: monospace; font-size: 12px;">${user.id}</span></div>
+                <div class="profile-row"><span class="label">Name</span><span class="value">${user.name || 'Not provided'}</span></div>
                 <div class="profile-row"><span class="label">Email</span><span class="value">${user.email}</span></div>
-                <div class="profile-row"><span class="label">Name</span><span class="value">${user.name || '<span style="color:var(--text2);">Not set</span>'}</span></div>
-                <div class="profile-row"><span class="label">Email Verified</span><span class="value">${user.email_verified ? '<span class="badge badge-green">✓ Verified</span>' : '<span class="badge badge-orange">✗ Unverified</span>'}</span></div>
-                <div class="profile-row"><span class="label">Created</span><span class="value">${new Date(user.created_at).toLocaleString()}</span></div>
-                <div class="profile-row"><span class="label">MFA Status</span><span class="value">${user.mfa_enabled ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-orange">Disabled</span>'}</span></div>
-                <div class="profile-row"><span class="label">Token Expiration</span><span class="value">${jwt?.exp ? new Date(jwt.exp * 1000).toLocaleTimeString() : 'N/A'}</span></div>
+                <div class="profile-row"><span class="label">User ID</span><span class="value"><code>${user.id}</code></span></div>
+                <div class="profile-row">
+                  <span class="label">Email Verified</span>
+                  <span class="badge ${user.email_verified ? 'badge-green' : 'badge-orange'}">${user.email_verified ? 'Verified' : 'Pending'}</span>
+                </div>
+                <div class="profile-row">
+                  <span class="label">MFA Security</span>
+                  <span class="badge ${user.mfa_enabled ? 'badge-green' : 'badge-orange'}">${user.mfa_enabled ? 'Active (2FA)' : 'Disabled'}</span>
+                </div>
+                <div class="profile-row"><span class="label">Token Expires</span><span class="value">${jwtPayload?.exp ? new Date(jwtPayload.exp * 1000).toLocaleTimeString() : 'N/A'}</span></div>
               </div>
 
-              <div class="mfa-section" id="mfa-section">
-                <h3>🔐 Multi-Factor Authentication</h3>
-                <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Manage two-factor authenticator setup for this tenant account.</p>
-                <button class="btn btn-primary" id="mfa-enroll-btn" onclick="enrollMfa()">Enroll MFA</button>
-                <div id="mfa-enroll-result"></div>
+              <!-- MFA Section -->
+              <div class="mfa-section" id="mfa-box">
+                ${user.mfa_enabled ? `
+                  <h3>🛡️ Two-Factor Authentication Active</h3>
+                  <p style="font-size:12.5px; color:var(--text2); margin-bottom:12px;">Your tenant account is protected with TOTP authenticator.</p>
+                  <button class="btn" style="background:#7f1d1d; color:#fca5a5;" onclick="disableMfa()">Disable 2FA</button>
+                ` : `
+                  <h3>🛡️ Enable Two-Factor Authentication</h3>
+                  <p style="font-size:12.5px; color:var(--text2); margin-bottom:12px;">Add extra layer of protection to this tenant user.</p>
+                  <button class="btn btn-primary" onclick="setupMfa()">Set Up 2FA Authenticator</button>
+                  <div id="mfa-setup-area"></div>
+                `}
               </div>
 
-              <button class="btn btn-primary" style="background:var(--red);margin-top:24px;" onclick="doLogout()">Logout</button>
+              <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-primary" style="flex:1;" onclick="testRefresh()">🔄 Test Token Refresh</button>
+                <button class="btn" style="flex:1; background:var(--surface2); color:var(--text); border:1px solid var(--border);" onclick="doLogout()">Logout</button>
+              </div>
             </div>
           `;
-        } catch (err) { toast('Error loading profile: ' + err.message, 'error'); }
+        } catch (err) {
+          toast('Failed to load profile: ' + err.message, 'error');
+        }
       })();
     }
 
-    // --- MFA ENROLL ---
-    async function enrollMfa() {
-      const btn = document.getElementById('mfa-enroll-btn');
-      const result = document.getElementById('mfa-enroll-result');
-      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    async function testRefresh() {
+      const ok = await tryRefresh();
+      if (ok) {
+        toast('Token refreshed successfully! Check expiration time.', 'success');
+        renderDashboard();
+      } else {
+        toast('Refresh failed or session expired', 'error');
+      }
+    }
+
+    async function setupMfa() {
+      const area = document.getElementById('mfa-setup-area');
+      area.innerHTML = '<div style="margin-top:14px; text-align:center;"><span class="spinner"></span> Generating secret…</div>';
       try {
-        const res = await apiFetch('/v1/auth/mfa/enroll', { method: 'POST' });
+        const res = await apiFetch('/v1/auth/mfa/setup', { method: 'POST' });
         const data = await res.json();
-        if (!res.ok) { toast(data.error || 'Enrollment failed', 'error'); btn.disabled = false; btn.textContent = 'Enroll MFA'; return; }
-        result.innerHTML = `
-          <div class="qr-wrap"><img src="${data.qrCode}" alt="QR Code" width="200" /></div>
-          <p style="font-size:13px;color:var(--text2);text-align:center;">Scan with Google Authenticator or Authy:</p>
+        if (!res.ok) { toast(data.error || 'Failed to setup MFA', 'error'); area.innerHTML = ''; return; }
+        area.innerHTML = `
+          <div class="qr-wrap"><img src="${data.qrCode}" alt="MFA QR Code" width="180" height="180" /></div>
           <div class="secret-box">${data.secret}</div>
-          <form id="mfa-confirm-form" style="margin-top:12px;">
-            <label>Enter 6-digit code to confirm</label>
-            <input type="text" id="mfa-confirm-code" required placeholder="123456" maxlength="6" pattern="[0-9]{6}" />
-            <button class="btn btn-primary" type="submit" id="mfa-confirm-btn">Confirm &amp; Enable MFA</button>
-          </form>
+          <p style="font-size:12px; color:var(--text2); text-align:center;">Scan with Google Authenticator, then enter 6-digit code:</p>
+          <input type="text" id="setup-mfa-code" placeholder="123456" maxlength="6" style="margin-top:8px; text-align:center; font-size:16px; letter-spacing:4px;" />
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="confirmMfaSetup()">Confirm &amp; Activate 2FA</button>
         `;
-        btn.classList.add('hidden');
-        document.getElementById('mfa-confirm-form').onsubmit = async (e) => {
-          e.preventDefault();
-          const cbtn = document.getElementById('mfa-confirm-btn');
-          const code = document.getElementById('mfa-confirm-code').value.trim();
-          cbtn.disabled = true; cbtn.innerHTML = '<span class="spinner"></span>';
-          try {
-            const vres = await apiFetch('/v1/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ code }) });
-            const vdata = await vres.json();
-            if (!vres.ok) { toast(vdata.error || 'Invalid code', 'error'); cbtn.disabled = false; cbtn.textContent = 'Confirm & Enable MFA'; return; }
-            toast('MFA enabled successfully!', 'success');
-            result.innerHTML = '<p style="color:var(--green);margin-top:12px;text-align:center;font-weight:600;">✓ MFA is now active on your account.</p>';
-          } catch (err) { toast('Error: ' + err.message, 'error'); cbtn.disabled = false; cbtn.textContent = 'Confirm & Enable MFA'; }
-        };
-      } catch (err) { toast('Error: ' + err.message, 'error'); btn.disabled = false; btn.textContent = 'Enroll MFA'; }
+      } catch (err) { toast(err.message, 'error'); area.innerHTML = ''; }
+    }
+
+    async function confirmMfaSetup() {
+      const code = document.getElementById('setup-mfa-code').value.trim();
+      if (!code) return toast('Please enter the code', 'error');
+      try {
+        const res = await apiFetch('/v1/auth/mfa/enable', { method: 'POST', body: JSON.stringify({ code }) });
+        const data = await res.json();
+        if (!res.ok) return toast(data.error || 'Invalid code', 'error');
+        toast('MFA successfully enabled!', 'success');
+        renderDashboard();
+      } catch (err) { toast(err.message, 'error'); }
+    }
+
+    async function disableMfa() {
+      if (!confirm('Are you sure you want to disable 2FA for this user?')) return;
+      try {
+        const res = await apiFetch('/v1/auth/mfa/disable', { method: 'POST' });
+        if (!res.ok) return toast('Failed to disable MFA', 'error');
+        toast('2FA disabled', 'info');
+        renderDashboard();
+      } catch (err) { toast(err.message, 'error'); }
     }
 
     // --- FORGOT PASSWORD ---
@@ -673,10 +729,10 @@
       const app = document.getElementById('app');
       app.innerHTML = `
         <div class="card">
-          <h2>Forgot Password</h2>
-          <p class="subtitle">Enter your email and we'll send an anti-spam verified reset link</p>
+          <h2>Reset Password</h2>
+          <p class="subtitle">Enter your email and we will send a password reset token</p>
           <form id="fp-form">
-            <label>Email</label>
+            <label>Email Address</label>
             <input type="email" id="fp-email" required placeholder="you@example.com" />
             <button class="btn btn-primary" type="submit" id="fp-btn">Send Reset Link</button>
           </form>
@@ -694,7 +750,7 @@
           });
           const data = await res.json();
           toast(data.message || 'Check your inbox for the reset link.', 'success');
-        } catch (err) { toast('Network error', 'error'); }
+        } catch (err) { toast('Network error: ' + err.message, 'error'); }
         finally { btn.disabled = false; btn.textContent = 'Send Reset Link'; }
       };
     }
@@ -734,7 +790,7 @@
           if (!res.ok) { toast(data.error || 'Reset failed', 'error'); return; }
           toast('Password reset successfully! Please log in.', 'success');
           navigate('login');
-        } catch (err) { toast('Network error', 'error'); }
+        } catch (err) { toast('Network error: ' + err.message, 'error'); }
         finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
       };
     }
@@ -753,17 +809,24 @@
     }
 
     // --- MULTI-TENANT DYNAMIC OAUTH REDIRECTS (v1.1.0) ---
-    // Pass current URL as redirect_uri so Amygdala redirects user directly back here with tokens
     function getCleanReturnUrl() {
       return window.location.origin + window.location.pathname;
     }
 
     function oauthGoogle() {
+      if (isFileProtocol) {
+        toast('OAuth redirects require an HTTP server. Run via Live Server (http://localhost:5500) or open https://amygdala-api-37nt.onrender.com/client', 'error');
+        return;
+      }
       const returnUrl = getCleanReturnUrl();
       window.location.href = `${API}/v1/auth/oauth/google?x-api-key=${encodeURIComponent(API_KEY)}&redirect_uri=${encodeURIComponent(returnUrl)}`;
     }
 
     function oauthGithub() {
+      if (isFileProtocol) {
+        toast('OAuth redirects require an HTTP server. Run via Live Server (http://localhost:5500) or open https://amygdala-api-37nt.onrender.com/client', 'error');
+        return;
+      }
       const returnUrl = getCleanReturnUrl();
       window.location.href = `${API}/v1/auth/oauth/github?x-api-key=${encodeURIComponent(API_KEY)}&redirect_uri=${encodeURIComponent(returnUrl)}`;
     }

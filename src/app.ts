@@ -60,14 +60,14 @@ function serveTestDashboard(_req: express.Request, res: express.Response) {
   res.send(html);
 }
 
-// Helper to serve standalone tenant test client demo
-function serveSampleClient(_req: express.Request, res: express.Response) {
-  let filePath = path.join(__dirname, '../sample-client.html');
+// Helper to serve standalone tenant test client app (index.html)
+function serveClientApp(_req: express.Request, res: express.Response) {
+  let filePath = path.join(__dirname, '../index.html');
   if (!fs.existsSync(filePath)) {
-    filePath = path.join(process.cwd(), 'sample-client.html');
+    filePath = path.join(process.cwd(), 'index.html');
   }
   if (!fs.existsSync(filePath)) {
-    return res.status(404).send('sample-client.html not found');
+    return res.status(404).send('index.html not found');
   }
   let html = fs.readFileSync(filePath, 'utf8');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -77,8 +77,13 @@ function serveSampleClient(_req: express.Request, res: express.Response) {
 // Serve Test Authentication Dashboard at root and /test
 app.get('/', serveTestDashboard);
 app.get('/test', serveTestDashboard);
-app.get('/demo', serveSampleClient);
-app.get('/sample-client', serveSampleClient);
+app.get('/dashboard', serveTestDashboard);
+
+// Serve Client Tenant Demo at /client, /demo, /sample-client, and /index.html
+app.get('/client', serveClientApp);
+app.get('/demo', serveClientApp);
+app.get('/sample-client', serveClientApp);
+app.get('/index.html', serveClientApp);
 
 // Auth callback landing page for OAuth redirects
 app.get('/auth/callback', (_req, res) => {

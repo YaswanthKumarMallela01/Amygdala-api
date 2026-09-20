@@ -357,10 +357,9 @@ amygdala/
 │       └── logger.ts               # Pino logger config
 ├── scripts/
 │   └── create-api-client.ts        # CLI to create API clients
-├── sample-client/
-│   └── index.html                  # Standalone client app demo (v1.1.0)
-├── test-client.html                # Amygdala developer dashboard (v1.1.0)
-├── Dockerfile                      # Multi-stage Docker build
+├── index.html                  # Standalone client app demo (v1.1.0)
+├── test-client.html            # Amygdala developer console / admin dashboard
+├── Dockerfile                  # Multi-stage Docker build
 ├── package.json
 └── tsconfig.json
 ```
