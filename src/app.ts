@@ -60,9 +60,25 @@ function serveTestDashboard(_req: express.Request, res: express.Response) {
   res.send(html);
 }
 
+// Helper to serve standalone tenant test client demo
+function serveSampleClient(_req: express.Request, res: express.Response) {
+  let filePath = path.join(__dirname, '../sample-client.html');
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(process.cwd(), 'sample-client.html');
+  }
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('sample-client.html not found');
+  }
+  let html = fs.readFileSync(filePath, 'utf8');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+}
+
 // Serve Test Authentication Dashboard at root and /test
 app.get('/', serveTestDashboard);
 app.get('/test', serveTestDashboard);
+app.get('/demo', serveSampleClient);
+app.get('/sample-client', serveSampleClient);
 
 // Auth callback landing page for OAuth redirects
 app.get('/auth/callback', (_req, res) => {

@@ -13,6 +13,7 @@ export interface User {
 export interface OAuthIdentity {
   id: string;
   user_id: string;
+  client_id: string | null;
   provider: string;
   provider_user_id: string;
   created_at: Date;

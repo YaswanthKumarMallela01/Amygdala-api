@@ -7,6 +7,7 @@
 Multi-tenant auth with JWTs, refresh token rotation, OAuth 2.1, TOTP MFA,
 Cloudflare Turnstile bot protection, and Redis-backed rate limiting.
 
+[![Version](https://img.shields.io/badge/version-v1.1.0-6366f1.svg)](package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express)](https://expressjs.com/)
@@ -161,14 +162,14 @@ Copy `.env.example` → `.env` and fill in every value. All variables are **requ
 | `POST` | `/v1/auth/mfa/verify` | API Key + Bearer | Confirm enrollment OR complete MFA login |
 | `DELETE` | `/v1/auth/mfa/enroll` | API Key + Bearer | Disable TOTP two-factor authentication |
 
-### OAuth 2.1
+### OAuth 2.1 (Multi-Tenant)
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/v1/auth/oauth/google` | API Key | Redirect to Google (PKCE, extracts name & email) |
-| `GET` | `/v1/auth/oauth/github` | API Key | Redirect to GitHub (extracts name & email) |
-| `GET` | `/v1/auth/oauth/google/callback` | — | Google callback (public) |
-| `GET` | `/v1/auth/oauth/github/callback` | — | GitHub callback (public) |
+| `GET` | `/v1/auth/oauth/google` | API Key | Redirect to Google with PKCE. Supports `?redirect_uri=https://your-app.com/callback` |
+| `GET` | `/v1/auth/oauth/github` | API Key | Redirect to GitHub. Supports `?redirect_uri=https://your-app.com/callback` |
+| `GET` | `/v1/auth/oauth/google/callback` | — | Google callback (exchanges code, scopes user to API client tenant, redirects to client `redirect_uri`) |
+| `GET` | `/v1/auth/oauth/github/callback` | — | GitHub callback (exchanges code, scopes user to API client tenant, redirects to client `redirect_uri`) |
 
 ### Multi-Tenant User & Session Management
 
@@ -314,7 +315,8 @@ amygdala/
 │   │       ├── 001_initial.sql     # Core schema
 │   │       ├── 002_add_user_id_to_api_clients.sql
 │   │       ├── 003_add_name_to_users.sql
-│   │       └── 004_multi_tenant_partition.sql  # Multi-tenant isolation
+│   │       ├── 004_multi_tenant_partition.sql  # Multi-tenant isolation
+│   │       └── 005_oauth_multi_tenant.sql      # Multi-tenant OAuth identities
 │   ├── middleware/
 │   │   ├── api-key.ts              # x-api-key validation + per-client CORS
 │   │   ├── auth.ts                 # Bearer JWT verification
@@ -337,8 +339,8 @@ amygdala/
 │   │   │   ├── enroll.ts           # POST /mfa/enroll
 │   │   │   └── verify.ts          # POST /mfa/verify
 │   │   └── oauth/
-│   │       ├── google.ts           # Google OAuth + PKCE
-│   │       └── github.ts           # GitHub OAuth
+│   │       ├── google.ts           # Google OAuth + PKCE (tenant-isolated)
+│   │       └── github.ts           # GitHub OAuth (tenant-isolated)
 │   ├── services/
 │   │   ├── jwt.service.ts          # Sign/verify JWTs, JWKS export
 │   │   ├── token.service.ts        # Refresh token create/rotate/revoke
@@ -355,7 +357,9 @@ amygdala/
 │       └── logger.ts               # Pino logger config
 ├── scripts/
 │   └── create-api-client.ts        # CLI to create API clients
-├── test-client.html                # Built-in auth test dashboard
+├── sample-client/
+│   └── index.html                  # Standalone client app demo (v1.1.0)
+├── test-client.html                # Amygdala developer dashboard (v1.1.0)
 ├── Dockerfile                      # Multi-stage Docker build
 ├── package.json
 └── tsconfig.json

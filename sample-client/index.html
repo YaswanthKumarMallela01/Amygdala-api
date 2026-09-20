@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amygdala Client Demo (v1.1.0)</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0d14;
+      --surface: #141824;
+      --surface2: #1e2436;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --green: #10b981;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- TOP BANNER --- */
+    .tenant-badge-bar {
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 18px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #c7d2fe;
+    }
+    .tenant-badge-bar code {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+
+    /* --- NAV --- */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav .logo { font-weight: 800; font-size: 18px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    nav .nav-links { display: flex; gap: 8px; }
+    nav button {
+      background: transparent; border: 1px solid var(--border); color: var(--text2);
+      padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all .15s;
+    }
+    nav button:hover { border-color: var(--accent); color: var(--text); }
+    nav button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* --- MAIN --- */
+    main {
+      flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+
+    /* --- CARD --- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    .card h2 { margin-bottom: 6px; font-size: 22px; font-weight: 700; color: #fff; }
+    .card .subtitle { color: var(--text2); font-size: 13.5px; margin-bottom: 24px; line-height: 1.5; }
+
+    /* --- FORM --- */
+    label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 6px; margin-top: 16px; }
+    input[type="email"], input[type="password"], input[type="text"] {
+      width: 100%; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 14px; outline: none; transition: border-color .15s;
+    }
+    input:focus { border-color: var(--accent); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: .15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-oauth {
+      background: var(--surface2); color: var(--text); border: 1px solid var(--border); margin-top: 10px;
+      padding: 10px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all .15s; width: 100%;
+    }
+    .btn-oauth:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.08); }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text2); font-size: 12.5px;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .link { color: var(--accent); cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .link:hover { text-decoration: underline; }
+    .form-footer { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text2); }
+
+    /* --- CONFIG BAR IN CARD --- */
+    .config-accordion {
+      margin-bottom: 20px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .config-accordion summary { cursor: pointer; color: var(--text2); font-weight: 600; }
+    .config-inputs { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .config-inputs input { font-size: 12px; padding: 6px 10px; font-family: monospace; }
+
+    /* --- TOAST --- */
+    #toast-container {
+      position: fixed; top: 16px; right: 16px; z-index: 999; display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast {
+      padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; animation: slideIn .25s;
+      max-width: 380px; word-break: break-word; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.3); }
+    .toast.info { background: #1e293b; color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.2); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } }
+
+    /* --- DASHBOARD --- */
+    .profile-card { display: flex; flex-direction: column; gap: 10px; }
+    .profile-row {
+      display: flex; justify-content: space-between; align-items: center; padding: 10px 0;
+      border-bottom: 1px solid var(--border); font-size: 13.5px;
+    }
+    .profile-row .label { color: var(--text2); font-weight: 500; }
+    .profile-row .value { color: #fff; font-weight: 600; word-break: break-all; text-align: right; max-width: 260px; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 11.5px; font-weight: 700;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-orange { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    .mfa-section {
+      margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
+    }
+    .mfa-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    .qr-wrap { text-align: center; margin: 16px 0; }
+    .qr-wrap img { border-radius: 8px; background: #fff; padding: 8px; }
+    .secret-box {
+      background: var(--surface2); padding: 10px; border-radius: 8px; text-align: center;
+      font-family: monospace; font-size: 13px; margin: 8px 0; word-break: break-all; color: #38bdf8;
+    }
+
+    /* --- SPINNER --- */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Turnstile */
+    .turnstile-wrap { margin-top: 16px; display: flex; justify-content: center; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- Tenant Status Bar -->
+  <div class="tenant-badge-bar">
+    <div>
+      <strong>🏢 Multi-Tenant Client Test App</strong> &bull; Version: <code>v1.1.0</code>
+    </div>
+    <div>
+      API Key: <code id="activeKeySnippet">Loading…</code>
+    </div>
+  </div>
+
+  <nav>
+    <span class="logo">🧠 Amygdala Auth Test</span>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+
+  <main><div id="app"></div></main>
+  <div id="toast-container"></div>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    // Default API and Master / Project API Key
+    let API = localStorage.getItem('amygdala_test_api') || 'https://amygdala-api-37nt.onrender.com';
+    let API_KEY = localStorage.getItem('amygdala_test_key') || 'f99299f4c9aaee70b59be78fcdab9cd1f1a3ae173a325bd9ae1a6529293586ff';
+    let TURNSTILE_SITE_KEY = '0x4AAAAAAE6ZTecpZXCv94hL';
+
+    function updateKeySnippet() {
+      const el = document.getElementById('activeKeySnippet');
+      if (el) el.textContent = API_KEY ? (API_KEY.substring(0, 10) + '…' + API_KEY.substring(API_KEY.length - 6)) : 'None';
+    }
+
+    // ==================== AUTH STATE ====================
+    let accessToken = sessionStorage.getItem('accessToken') || null;
+
+    function setTokens(at, rt) {
+      accessToken = at;
+      if (at) sessionStorage.setItem('accessToken', at);
+      else sessionStorage.removeItem('accessToken');
+      if (rt) localStorage.setItem('refreshToken', rt);
+    }
+
+    function getRefreshToken() { return localStorage.getItem('refreshToken'); }
+
+    function clearTokens() {
+      accessToken = null;
+      sessionStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
+
+    function isLoggedIn() { return !!accessToken; }
+
+    function decodeJwt(token) {
+      try {
+        const payload = token.split('.')[1];
+        return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      } catch { return null; }
+    }
+
+    // ==================== API CLIENT ====================
+    async function apiFetch(path, opts = {}) {
+      const headers = { 'Content-Type': 'application/json', 'x-api-key': API_KEY, ...opts.headers };
+      if (accessToken && !opts.noAuth) headers['Authorization'] = `Bearer ${accessToken}`;
+      const res = await fetch(API + path, { ...opts, headers });
+
+      // Auto-refresh on 401 for protected routes
+      if (res.status === 401 && !opts._retried && !opts.noAuth && getRefreshToken()) {
+        const refreshed = await tryRefresh();
+        if (refreshed) return apiFetch(path, { ...opts, _retried: true });
+      }
+
+      return res;
+    }
+
+    async function tryRefresh() {
+      const rt = getRefreshToken();
+      if (!rt) return false;
+      try {
+        const res = await fetch(API + '/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+          body: JSON.stringify({ refreshToken: rt })
+        });
+        if (!res.ok) { clearTokens(); navigate('login'); return false; }
+        const data = await res.json();
+        setTokens(data.accessToken, data.refreshToken);
+        return true;
+      } catch { clearTokens(); navigate('login'); return false; }
+    }
+
+    // ==================== TOAST NOTIFICATIONS ====================
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }
+
+    // ==================== TURNSTILE HELPER ====================
+    let turnstileWidgetIds = {};
+
+    function renderTurnstile(containerId, callback) {
+      if (typeof turnstile === 'undefined') {
+        setTimeout(() => renderTurnstile(containerId, callback), 300);
+        return;
+      }
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      try {
+        const id = turnstile.render(`#${containerId}`, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: callback,
+          theme: 'dark',
+        });
+        turnstileWidgetIds[containerId] = id;
+      } catch (e) {
+        console.warn('Turnstile render warning:', e);
+      }
+    }
+
+    function resetTurnstile(containerId) {
+      if (turnstileWidgetIds[containerId] != null && typeof turnstile !== 'undefined') {
+        try { turnstile.reset(turnstileWidgetIds[containerId]); } catch {}
+      }
+    }
+
+    // ==================== ROUTER ====================
+    function navigate(page) { location.hash = '#/' + page; }
+
+    function getPage() {
+      const h = location.hash.slice(2) || 'login';
+      return h.split('?')[0];
+    }
+
+    function getHashParams() {
+      const hash = location.hash;
+      const frag = hash.includes('access_token') ? hash.substring(hash.indexOf('access_token')) : '';
+      if (!frag) return {};
+      const params = {};
+      frag.split('&').forEach(p => { const [k, v] = p.split('='); if (k && v) params[k] = decodeURIComponent(v); });
+      return params;
+    }
+
+    function getQueryParams() {
+      const hash = location.hash;
+      const qi = hash.indexOf('?');
+      if (qi === -1) return {};
+      const params = {};
+      hash.slice(qi + 1).split('&').forEach(p => { const [k, v] = p.split('='); if (k) params[k] = decodeURIComponent(v || ''); });
+      return params;
+    }
+
+    const routes = {
+      login: renderLogin,
+      signup: renderSignup,
+      dashboard: renderDashboard,
+      'forgot-password': renderForgotPassword,
+      'reset-password': renderResetPassword,
+      callback: renderCallback,
+      'auth/callback': renderCallback,
+    };
+
+    function router() {
+      updateKeySnippet();
+      const page = getPage();
+      if (['dashboard'].includes(page) && !isLoggedIn()) { navigate('login'); return; }
+      if (['login', 'signup'].includes(page) && isLoggedIn()) { navigate('dashboard'); return; }
+      const render = routes[page] || routes['login'];
+      document.getElementById('app').innerHTML = '';
+      render();
+      updateNav(page);
+    }
+
+    function updateNav(page) {
+      const nav = document.getElementById('nav-links');
+      if (isLoggedIn()) {
+        nav.innerHTML = `
+          <button onclick="navigate('dashboard')" class="${page === 'dashboard' ? 'active' : ''}">Dashboard</button>
+          <button onclick="doLogout()">Logout</button>
+        `;
+      } else {
+        nav.innerHTML = `
+          <button onclick="navigate('login')" class="${page === 'login' ? 'active' : ''}">Login</button>
+          <button onclick="navigate('signup')" class="${page === 'signup' ? 'active' : ''}">Sign Up</button>
+        `;
+      }
+    }
+
+    // Catch OAuth callback tokens in hash
+    function checkIncomingOAuthTokens() {
+      const raw = window.location.hash || window.location.search || '';
+      if (raw.includes('access_token=')) {
+        const tokenPart = raw.substring(raw.indexOf('access_token='));
+        const params = new URLSearchParams(tokenPart);
+        const at = params.get('access_token');
+        const rt = params.get('refresh_token');
+        if (at) {
+          setTokens(at, rt);
+          toast('Logged in successfully via OAuth!', 'success');
+          window.location.hash = '#/dashboard';
+          return true;
+        }
+      }
+      return false;
+    }
+
+    window.addEventListener('hashchange', router);
+    window.addEventListener('DOMContentLoaded', () => {
+      const handled = checkIncomingOAuthTokens();
+      if (!handled) router();
+    });
+
+    // ==================== LOGOUT ====================
+    async function doLogout() {
+      const rt = getRefreshToken();
+      if (rt) {
+        try { await apiFetch('/v1/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken: rt }) }); }
+        catch {}
+      }
+      clearTokens();
+      toast('Logged out', 'info');
+      navigate('login');
+    }
+
+    // ==================== CONFIG DRAWER HELPER ====================
+    function renderConfigAccordion() {
+      return `
+        <details class="config-accordion">
+          <summary>⚙️ API &amp; Tenant Key Settings</summary>
+          <div class="config-inputs">
+            <div>
+              <label style="margin-top:0;">API Base URL:</label>
+              <input type="text" id="cfgApi" value="${API}" />
+            </div>
+            <div>
+              <label style="margin-top:0;">Project API Key (x-api-key):</label>
+              <input type="text" id="cfgKey" value="${API_KEY}" />
+            </div>
+            <button class="btn btn-primary" style="padding: 6px; font-size: 12px; margin-top: 6px;" onclick="saveConfig()">Save &amp; Reload</button>
+          </div>
+        </details>
+      `;
+    }
+
+    function saveConfig() {
+      const u = document.getElementById('cfgApi').value.trim();
+      const k = document.getElementById('cfgKey').value.trim();
+      if (u) { API = u; localStorage.setItem('amygdala_test_api', u); }
+      if (k) { API_KEY = k; localStorage.setItem('amygdala_test_key', k); }
+      toast('Settings updated!', 'success');
+      router();
+    }
+
+    // ==================== PAGES ====================
+
+    // --- SIGNUP ---
+    function renderSignup() {
+      let turnstileToken = '';
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="card">
+          ${renderConfigAccordion()}
+          <h2>Create Account</h2>
+          <p class="subtitle">Sign up to authenticate under this tenant workspace</p>
+          <form id="signup-form">
+            <label>Full Name</label>
+            <input type="text" id="su-name" placeholder="John Doe" />
+            <label>Email</label>
+            <input type="email" id="su-email" required placeholder="you@example.com" />
+            <label>Password</label>
+            <input type="password" id="su-pass" required placeholder="Min 8 characters" minlength="8" />
+            <div class="turnstile-wrap" id="su-turnstile"></div>
+            <button class="btn btn-primary" type="submit" id="su-btn">Sign Up</button>
+          </form>
+          <div class="divider">or continue with</div>
+          <button class="btn btn-oauth" onclick="oauthGoogle()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/><path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/></svg>
+            Sign in with Google
+          </button>
+          <button class="btn btn-oauth" onclick="oauthGithub()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Sign in with GitHub
+          </button>
+          <p class="form-footer">Already have an account? <a class="link" onclick="navigate('login')">Log in</a></p>
+        </div>
+      `;
+      renderTurnstile('su-turnstile', (t) => { turnstileToken = t; });
+
+      document.getElementById('signup-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('su-btn');
+        const name = document.getElementById('su-name').value.trim();
+        const email = document.getElementById('su-email').value.trim();
+        const password = document.getElementById('su-pass').value;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Signing up…';
+        try {
+          const res = await apiFetch('/v1/auth/signup', {
+            method: 'POST', noAuth: true,
+            body: JSON.stringify({ name, email, password, turnstileToken: turnstileToken || 'test' })
+          });
+          const data = await res.json();
+          if (!res.ok) { toast(data.error || 'Signup failed', 'error'); resetTurnstile('su-turnstile'); turnstileToken = ''; return; }
+          setTokens(data.accessToken, data.refreshToken);
+          toast('Account created successfully!', 'success');
+          navigate('dashboard');
+        } catch (err) { toast('Network error: ' + err.message, 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Sign Up'; }
+      };
+    }
+
+    // --- LOGIN ---
+    function renderLogin() {
+      let turnstileToken = '';
+      let showTurnstile = false;
+      let mfaPending = null;
+      const app = document.getElementById('app');
+
+      function draw() {
+        app.innerHTML = `
+          <div class="card">
+            ${renderConfigAccordion()}
+            <h2>${mfaPending ? '🔐 MFA Verification' : 'Welcome Back'}</h2>
+            <p class="subtitle">${mfaPending ? 'Enter the 6-digit code from your authenticator app' : 'Log in using credentials or OAuth'}</p>
+            <form id="login-form">
+              ${mfaPending ? `
+                <label>TOTP Code</label>
+                <input type="text" id="mfa-code" required placeholder="123456" maxlength="6" pattern="[0-9]{6}" autofocus />
+              ` : `
+                <label>Email</label>
+                <input type="email" id="li-email" required placeholder="you@example.com" />
+                <label>Password</label>
+                <input type="password" id="li-pass" required placeholder="Password" />
+                <div class="turnstile-wrap ${showTurnstile ? '' : 'hidden'}" id="li-turnstile"></div>
+              `}
+              <button class="btn btn-primary" type="submit" id="li-btn">${mfaPending ? 'Verify' : 'Log In'}</button>
+            </form>
+            ${!mfaPending ? `
+              <div class="divider">or continue with</div>
+              <button class="btn btn-oauth" onclick="oauthGoogle()">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.1c0 2.8.7 5.4 1.9 7.8l3.7-2.9z"/><path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/></svg>
+                Sign in with Google
+              </button>
+              <button class="btn btn-oauth" onclick="oauthGithub()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                Sign in with GitHub
+              </button>
+              <p class="form-footer">
+                <a class="link" onclick="navigate('forgot-password')">Forgot password?</a> &bull; 
+                <a class="link" onclick="navigate('signup')">Create account</a>
+              </p>
+            ` : `<p class="form-footer"><a class="link" onclick="mfaPending=null;draw();">&larr; Back to login</a></p>`}
+          </div>
+        `;
+        if (showTurnstile && !mfaPending) {
+          renderTurnstile('li-turnstile', (t) => { turnstileToken = t; });
+        }
+
+        document.getElementById('login-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('li-btn');
+          btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+
+          if (mfaPending) {
+            const code = document.getElementById('mfa-code').value.trim();
+            try {
+              const res = await fetch(API + '/v1/auth/mfa/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'Authorization': `Bearer ${mfaPending.mfaToken}` },
+                body: JSON.stringify({ code })
+              });
+              const data = await res.json();
+              if (!res.ok) { toast(data.error || 'Invalid code', 'error'); btn.disabled = false; btn.textContent = 'Verify'; return; }
+              setTokens(data.accessToken, data.refreshToken);
+              toast('Logged in with MFA!', 'success');
+              navigate('dashboard');
+            } catch (err) { toast('Network error', 'error'); btn.disabled = false; btn.textContent = 'Verify'; }
+            return;
+          }
+
+          const email = document.getElementById('li-email').value.trim();
+          const password = document.getElementById('li-pass').value;
+          const body = { email, password };
+          if (turnstileToken) body.turnstileToken = turnstileToken;
+
+          try {
+            const res = await apiFetch('/v1/auth/login', { method: 'POST', noAuth: true, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (!res.ok) {
+              toast(data.error || 'Login failed', 'error');
+              showTurnstile = true;
+              turnstileToken = '';
+              draw();
+              return;
+            }
+            if (data.mfaRequired) {
+              mfaPending = { mfaToken: data.mfaToken };
+              draw();
+              return;
+            }
+            setTokens(data.accessToken, data.refreshToken);
+            toast('Logged in successfully!', 'success');
+            navigate('dashboard');
+          } catch (err) { toast('Network error: ' + err.message, 'error'); btn.disabled = false; btn.textContent = 'Log In'; }
+        };
+      }
+      draw();
+    }
+
+    // --- DASHBOARD ---
+    function renderDashboard() {
+      const app = document.getElementById('app');
+      app.innerHTML = `<div class="card"><h2>Loading…</h2><p class="subtitle"><span class="spinner"></span> Fetching user profile from tenant pool…</p></div>`;
+
+      (async () => {
+        try {
+          const res = await apiFetch('/v1/auth/me');
+          if (!res.ok) { toast('Session expired', 'error'); clearTokens(); navigate('login'); return; }
+          const user = await res.json();
+          const jwt = decodeJwt(accessToken);
+
+          app.innerHTML = `
+            <div class="card" style="max-width:540px;">
+              <h2>👋 Tenant User Dashboard</h2>
+              <p class="subtitle">Authenticated through API Key: <code>${API_KEY.substring(0, 10)}…</code></p>
+              <div class="profile-card">
+                <div class="profile-row"><span class="label">User ID</span><span class="value" style="font-family: monospace; font-size: 12px;">${user.id}</span></div>
+                <div class="profile-row"><span class="label">Email</span><span class="value">${user.email}</span></div>
+                <div class="profile-row"><span class="label">Name</span><span class="value">${user.name || '<span style="color:var(--text2);">Not set</span>'}</span></div>
+                <div class="profile-row"><span class="label">Email Verified</span><span class="value">${user.email_verified ? '<span class="badge badge-green">✓ Verified</span>' : '<span class="badge badge-orange">✗ Unverified</span>'}</span></div>
+                <div class="profile-row"><span class="label">Created</span><span class="value">${new Date(user.created_at).toLocaleString()}</span></div>
+                <div class="profile-row"><span class="label">MFA Status</span><span class="value">${user.mfa_enabled ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-orange">Disabled</span>'}</span></div>
+                <div class="profile-row"><span class="label">Token Expiration</span><span class="value">${jwt?.exp ? new Date(jwt.exp * 1000).toLocaleTimeString() : 'N/A'}</span></div>
+              </div>
+
+              <div class="mfa-section" id="mfa-section">
+                <h3>🔐 Multi-Factor Authentication</h3>
+                <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Manage two-factor authenticator setup for this tenant account.</p>
+                <button class="btn btn-primary" id="mfa-enroll-btn" onclick="enrollMfa()">Enroll MFA</button>
+                <div id="mfa-enroll-result"></div>
+              </div>
+
+              <button class="btn btn-primary" style="background:var(--red);margin-top:24px;" onclick="doLogout()">Logout</button>
+            </div>
+          `;
+        } catch (err) { toast('Error loading profile: ' + err.message, 'error'); }
+      })();
+    }
+
+    // --- MFA ENROLL ---
+    async function enrollMfa() {
+      const btn = document.getElementById('mfa-enroll-btn');
+      const result = document.getElementById('mfa-enroll-result');
+      btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+      try {
+        const res = await apiFetch('/v1/auth/mfa/enroll', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) { toast(data.error || 'Enrollment failed', 'error'); btn.disabled = false; btn.textContent = 'Enroll MFA'; return; }
+        result.innerHTML = `
+          <div class="qr-wrap"><img src="${data.qrCode}" alt="QR Code" width="200" /></div>
+          <p style="font-size:13px;color:var(--text2);text-align:center;">Scan with Google Authenticator or Authy:</p>
+          <div class="secret-box">${data.secret}</div>
+          <form id="mfa-confirm-form" style="margin-top:12px;">
+            <label>Enter 6-digit code to confirm</label>
+            <input type="text" id="mfa-confirm-code" required placeholder="123456" maxlength="6" pattern="[0-9]{6}" />
+            <button class="btn btn-primary" type="submit" id="mfa-confirm-btn">Confirm &amp; Enable MFA</button>
+          </form>
+        `;
+        btn.classList.add('hidden');
+        document.getElementById('mfa-confirm-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const cbtn = document.getElementById('mfa-confirm-btn');
+          const code = document.getElementById('mfa-confirm-code').value.trim();
+          cbtn.disabled = true; cbtn.innerHTML = '<span class="spinner"></span>';
+          try {
+            const vres = await apiFetch('/v1/auth/mfa/verify', { method: 'POST', body: JSON.stringify({ code }) });
+            const vdata = await vres.json();
+            if (!vres.ok) { toast(vdata.error || 'Invalid code', 'error'); cbtn.disabled = false; cbtn.textContent = 'Confirm & Enable MFA'; return; }
+            toast('MFA enabled successfully!', 'success');
+            result.innerHTML = '<p style="color:var(--green);margin-top:12px;text-align:center;font-weight:600;">✓ MFA is now active on your account.</p>';
+          } catch (err) { toast('Error: ' + err.message, 'error'); cbtn.disabled = false; cbtn.textContent = 'Confirm & Enable MFA'; }
+        };
+      } catch (err) { toast('Error: ' + err.message, 'error'); btn.disabled = false; btn.textContent = 'Enroll MFA'; }
+    }
+
+    // --- FORGOT PASSWORD ---
+    function renderForgotPassword() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="card">
+          <h2>Forgot Password</h2>
+          <p class="subtitle">Enter your email and we'll send an anti-spam verified reset link</p>
+          <form id="fp-form">
+            <label>Email</label>
+            <input type="email" id="fp-email" required placeholder="you@example.com" />
+            <button class="btn btn-primary" type="submit" id="fp-btn">Send Reset Link</button>
+          </form>
+          <p class="form-footer"><a class="link" onclick="navigate('login')">&larr; Back to login</a></p>
+        </div>
+      `;
+      document.getElementById('fp-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('fp-btn');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending…';
+        try {
+          const res = await apiFetch('/v1/auth/forgot-password', {
+            method: 'POST', noAuth: true,
+            body: JSON.stringify({ email: document.getElementById('fp-email').value.trim() })
+          });
+          const data = await res.json();
+          toast(data.message || 'Check your inbox for the reset link.', 'success');
+        } catch (err) { toast('Network error', 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Send Reset Link'; }
+      };
+    }
+
+    // --- RESET PASSWORD ---
+    function renderResetPassword() {
+      const params = getQueryParams();
+      const token = params.token || '';
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="card">
+          <h2>Reset Password</h2>
+          <p class="subtitle">Enter your new password</p>
+          <form id="rp-form">
+            <label>Reset Token</label>
+            <input type="text" id="rp-token" required value="${token}" placeholder="Paste token from email" />
+            <label>New Password</label>
+            <input type="password" id="rp-pass" required placeholder="Min 8 characters" minlength="8" />
+            <button class="btn btn-primary" type="submit" id="rp-btn">Reset Password</button>
+          </form>
+          <p class="form-footer"><a class="link" onclick="navigate('login')">&larr; Back to login</a></p>
+        </div>
+      `;
+      document.getElementById('rp-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('rp-btn');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+        try {
+          const res = await apiFetch('/v1/auth/reset-password', {
+            method: 'POST', noAuth: true,
+            body: JSON.stringify({
+              token: document.getElementById('rp-token').value.trim(),
+              newPassword: document.getElementById('rp-pass').value
+            })
+          });
+          const data = await res.json();
+          if (!res.ok) { toast(data.error || 'Reset failed', 'error'); return; }
+          toast('Password reset successfully! Please log in.', 'success');
+          navigate('login');
+        } catch (err) { toast('Network error', 'error'); }
+        finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
+      };
+    }
+
+    // --- OAUTH CALLBACK FALLBACK ---
+    function renderCallback() {
+      const handled = checkIncomingOAuthTokens();
+      if (!handled) {
+        document.getElementById('app').innerHTML = `
+          <div class="card">
+            <h2>OAuth Callback</h2>
+            <p class="subtitle">No credentials found in URL hash. <a class="link" onclick="navigate('login')">Return to Login</a></p>
+          </div>
+        `;
+      }
+    }
+
+    // --- MULTI-TENANT DYNAMIC OAUTH REDIRECTS (v1.1.0) ---
+    // Pass current URL as redirect_uri so Amygdala redirects user directly back here with tokens
+    function getCleanReturnUrl() {
+      return window.location.origin + window.location.pathname;
+    }
+
+    function oauthGoogle() {
+      const returnUrl = getCleanReturnUrl();
+      window.location.href = `${API}/v1/auth/oauth/google?x-api-key=${encodeURIComponent(API_KEY)}&redirect_uri=${encodeURIComponent(returnUrl)}`;
+    }
+
+    function oauthGithub() {
+      const returnUrl = getCleanReturnUrl();
+      window.location.href = `${API}/v1/auth/oauth/github?x-api-key=${encodeURIComponent(API_KEY)}&redirect_uri=${encodeURIComponent(returnUrl)}`;
+    }
+  </script>
+</body>
+</html>
