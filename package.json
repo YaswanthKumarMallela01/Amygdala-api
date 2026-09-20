@@ -1,7 +1,7 @@
 {
   "name": "amygdala",
   "version": "1.1.0",
-  "description": "Amygdala Authentication-as-a-Service API",
+  "description": "Production-ready Multi-Tenant Auth-as-a-Service API with developer API keys, isolated user directories, RS256 JWTs, Google/GitHub OAuth 2.1 (PKCE), TOTP MFA, Cloudflare Turnstile, and Redis rate limiting.",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
