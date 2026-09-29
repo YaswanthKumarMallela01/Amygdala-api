@@ -196,9 +196,47 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Turnstile */
-    .turnstile-wrap { margin-top: 16px; display: flex; justify-content: center; }
-
     .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      html, body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      nav {
+        padding: 10px 14px;
+        height: auto;
+        min-height: 56px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      nav .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      main {
+        padding: 16px 12px;
+      }
+      .card {
+        padding: 22px 16px;
+        border-radius: 12px;
+      }
+      .tenant-badge-bar {
+        padding: 8px 12px;
+        font-size: 11px;
+      }
+      #toast-container {
+        right: 12px;
+        left: 12px;
+        top: 12px;
+        max-width: calc(100vw - 24px);
+      }
+      .toast {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
